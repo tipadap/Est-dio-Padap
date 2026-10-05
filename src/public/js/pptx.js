@@ -60,7 +60,7 @@ async function rasterImage(el) {
   if ((el.fit === 'contain') === r > cw / ch) dh = cw / r;
   else dw = ch * r;
   ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
-  const transparent = clip || /\.png$/i.test(el.src) || el.fit === 'contain';
+  const transparent = clip || /\.(png|webp)$/i.test(el.src) || el.fit === 'contain';
   return transparent ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.9);
 }
 

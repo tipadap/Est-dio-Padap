@@ -1,230 +1,230 @@
 [
   {
-    "file": "produto-yara-basa.jpg",
+    "file": "produto-yara-basa.webp",
     "kind": "produto",
     "name": "YaraBasa",
     "brand": "Yara",
     "description": "7 nutrientes (N, P, K Mg, Ca, S, B, Mn e Zn) em um único grânulo para adubação de base."
   },
   {
-    "file": "produto-yara-liva.jpg",
+    "file": "produto-yara-liva.webp",
     "kind": "produto",
     "name": "YaraLiva",
     "brand": "Yara",
     "description": "Nitrato de Cálcio e Boro solúveis em água."
   },
   {
-    "file": "produto-yara-mila.jpg",
+    "file": "produto-yara-mila.webp",
     "kind": "produto",
     "name": "YaraMila",
     "brand": "Yara",
     "description": "7 nutrientes (N, P, K Mg, S, B e Zn) em um único grânulo - 3 fases de liberação de fósforo e 15% de sulfato de potássio."
   },
   {
-    "file": "produto-yara-rega.jpg",
+    "file": "produto-yara-rega.webp",
     "kind": "produto",
     "name": "YaraRega",
     "brand": "Yara",
     "description": "Ideal para fertirrigação com 7 nutrientes (N, P, K, Mg, S, B e Zn) em um único grânulo, além de ser formulado com Sulfato de Potássio."
   },
   {
-    "file": "produto-yara-mila-complex.jpg",
+    "file": "produto-yara-mila-complex.webp",
     "kind": "produto",
     "name": "YaraMila Complex",
     "brand": "Yara",
     "description": "7 nutrientes (N, P, K, Mg, S, B, Fe, Mn) em um único grânulo. 3 fases de liberação de fósforo e de sulfato de potássio."
   },
   {
-    "file": "produto-amazinc.jpg",
+    "file": "produto-amazinc.webp",
     "kind": "produto",
     "name": "Amazinc",
     "brand": "YaraVita",
     "description": "Fertilizante líquido concentrado de óxido de Zinco (350 g/l) e Mn (250 g/l)."
   },
   {
-    "file": "produto-biotrac.jpg",
+    "file": "produto-biotrac.webp",
     "kind": "produto",
     "name": "Biotrac",
     "brand": "YaraVita",
     "description": "Bioestmulante a base de Ascophyllum nodosum (117g/l), B (13g/l), Zn (13 g/l), N (65 g/l) e K (27 g/l)."
   },
   {
-    "file": "produto-bortrac.jpg",
+    "file": "produto-bortrac.webp",
     "kind": "produto",
     "name": "Bortrac",
     "brand": "YaraVita",
     "description": "Fertilizante líquido concentrado de Boro MEA (150 G/L)."
   },
   {
-    "file": "produto-coptrac.jpg",
+    "file": "produto-coptrac.webp",
     "kind": "produto",
     "name": "Coptrac",
     "brand": "YaraVita",
     "description": "Fertilizante líquido concentrado de cobre vermelho (500 g/l)."
   },
   {
-    "file": "produto-folicare.jpg",
+    "file": "produto-folicare.webp",
     "kind": "produto",
     "name": "Folicare",
     "brand": "YaraVita",
     "description": "Fertilizante líquido voltado para enchimento a base de N (120 g/l), K (390 g/l), S (18 g/l) e Mg (28g/l)."
   },
   {
-    "file": "produto-glytrel-mnp.jpg",
+    "file": "produto-glytrel-mnp.webp",
     "kind": "produto",
     "name": "Glytrel MNP",
     "brand": "YaraVita",
     "description": "Fertilizante líquido para aplicações em soja junto com glifosato a base de P (87 g/l) e Mn (87 g/l)."
   },
   {
-    "file": "produto-yara-cafe.jpg",
+    "file": "produto-yara-cafe.webp",
     "kind": "produto",
     "name": "YaraVita Café",
     "brand": "YaraVita",
     "description": "YaraVita CAFÉ é o fertilizante foliar de N (69g/l), Mg (70g/l) Boro (70g/l), Zinco (140 g/l) para aplicação foliar ou diretamente no solo."
   },
   {
-    "file": "produto-magtrac.jpg",
+    "file": "produto-magtrac.webp",
     "kind": "produto",
     "name": "Magtrac",
     "brand": "YaraVita",
     "description": "Bioestimulante a base de Mg (79,8 g/l) e Ascophyllum nodosum."
   },
   {
-    "file": "produto-mancozin.jpg",
+    "file": "produto-mancozin.webp",
     "kind": "produto",
     "name": "Mancozin",
     "brand": "YaraVita",
     "description": "Fertilizante líquido Mn (327 g/l), Cu (52 g/l) e Zn (80 g/l)."
   },
   {
-    "file": "produto-mantrac.jpg",
+    "file": "produto-mantrac.webp",
     "kind": "produto",
     "name": "Mantrac",
     "brand": "YaraVita",
     "description": "Fertilizante líquido com Mn (500 g/l) e N (69,2 g/l)."
   },
   {
-    "file": "produto-zintrac.jpg",
+    "file": "produto-zintrac.webp",
     "kind": "produto",
     "name": "Zintrac",
     "brand": "YaraVita",
     "description": "Fertilizante líquido concentrado de óxido de Zn (700 g/l)."
   },
   {
-    "file": "produto-caltrac.jpg",
+    "file": "produto-caltrac.webp",
     "kind": "produto",
     "name": "Caltrac",
     "brand": "YaraVita",
     "description": "Fertilizante líquido concentrado em N (61 g/l) e Cu (400 g/l)."
   },
   {
-    "file": "produto-quebec.jpg",
+    "file": "produto-quebec.webp",
     "kind": "produto",
     "name": "Quebec",
     "brand": "Goplan",
     "description": "10% Ecklonia Maxima + 17% Carbono Orgânicos + 50% aminoácidos + micronutrientes que auxiliam na tolerância da cultura ao estresse e bioestimulam a planta a florescer."
   },
   {
-    "file": "produto-sysco.jpg",
+    "file": "produto-sysco.webp",
     "kind": "produto",
     "name": "Sysco",
     "brand": "Goplan",
     "description": "Indutor de resistência a base de Cobre."
   },
   {
-    "file": "produto-shelby.jpg",
+    "file": "produto-shelby.webp",
     "kind": "produto",
     "name": "Shelby",
     "brand": "Goplan",
     "description": "Nematicida e Fungicida à base de bactérias (Bacillus subtilis, Bacillus velezensis, Bacillus pumilus) e fungos (Trichoderma harzianum)"
   },
   {
-    "file": "produto-kopi.jpg",
+    "file": "produto-kopi.webp",
     "kind": "produto",
     "name": "Kopi",
     "brand": "Goplan",
     "description": "Complexo de nutrientes a base de sais B, Zn, Mn, K2O, S, Cu e Mg."
   },
   {
-    "file": "produto-maggo.jpg",
+    "file": "produto-maggo.webp",
     "kind": "produto",
     "name": "Maggo",
     "brand": "Goplan",
     "description": "Fertilizante líquido a base de Mg 8% + Aminoácidos 3%."
   },
   {
-    "file": "produto-touche.jpg",
+    "file": "produto-touche.webp",
     "kind": "produto",
     "name": "Touché",
     "brand": "Goplan",
     "description": "Potencializador de herbicida."
   },
   {
-    "file": "produto-blackgold.jpg",
+    "file": "produto-blackgold.webp",
     "kind": "produto",
     "name": "Blackgold",
     "brand": "Fortgreen",
     "description": "Condicionador de solo com alto teor de substâncias húmicas e fúlvicas e Ph ácido."
   },
   {
-    "file": "produto-li-700.jpg",
+    "file": "produto-li-700.webp",
     "kind": "produto",
     "name": "LI 700",
     "brand": "Fortgreen",
     "description": "Adjuvante com Ph tamponante, indicado para pulverização de herbicidas, eficiência anti-deriva e número 01 em vendas no mundo."
   },
   {
-    "file": "produto-router.jpg",
+    "file": "produto-router.webp",
     "kind": "produto",
     "name": "Router",
     "brand": "Fortgreen",
     "description": "Formulação com compostos orgânicos para ativação do dreno das culturas, enriquecidos com aminoácidos e micronutrientes que aumentam a produtividade."
   },
   {
-    "file": "produto-curative.jpg",
+    "file": "produto-curative.webp",
     "kind": "produto",
     "name": "Curative",
     "brand": "Fortgreen",
     "description": "Tecnologia para proteção de plantas a base de fosfito de potássio, cobre e níquel. Possui fósforo nutricional, pótassio, magnésio e enxofre, para fornecer energia para as plantas."
   },
   {
-    "file": "produto-drive.jpg",
+    "file": "produto-drive.webp",
     "kind": "produto",
     "name": "Drive",
     "brand": "Fortgreen",
     "description": "Adjuvante desenvolvido para reduzir deriva, melhorar espalhamento e aderência das gotas e acelerar absorção e translocação nas plantas, sem danificar a camada cerosa das folhas."
   },
   {
-    "file": "produto-parasol.jpg",
+    "file": "produto-parasol.webp",
     "kind": "produto",
     "name": "Parasol",
     "brand": "Santa Clara Agrociência",
     "description": "Protege as plantas da exposição excessiva dos raios solares e minimiza o estresse causado pela alta temperatura. Possui tecnologia de nanopartículas, garantindo fácil mistura."
   },
   {
-    "file": "produto-salut.jpg",
+    "file": "produto-salut.webp",
     "kind": "produto",
     "name": "Salut",
     "brand": "Santa Clara Agrociência",
     "description": "Produto de contato a base de ácido fosforoso, fosfito de cobre e agentes sanitizantes hospitalares que além de atingir fungos e bactérias, promove a resistência de plantas."
   },
   {
-    "file": "produto-sulfeto-sk.jpg",
+    "file": "produto-sulfeto-sk.webp",
     "kind": "produto",
     "name": "Sulfeto SK",
     "brand": "Santa Clara Agrociência",
     "description": "Produto a base de Sulfeto de Potássio, atua na diferenciação do alho, atua no enchimento das culturas e também é desalojante de pragas. S (486,0 g/l), K (486,0 g/l)"
   },
   {
-    "file": "produto-matriz-g.jpg",
+    "file": "produto-matriz-g.webp",
     "kind": "produto",
     "name": "Matriz G",
     "brand": "Santa Clara Agrociência",
     "description": "Produto concentrado de nutrientes e compostos orgânicos. Contém Ascophyllum nodosum, que auxilia na emergência das plantas e promove maior resistência a estresses climáticos."
   },
   {
-    "file": "produto-arkophos.jpg",
+    "file": "produto-arkophos.webp",
     "kind": "produto",
     "name": "Arkophos",
     "brand": "Arko",
@@ -238,21 +238,21 @@
     "description": "Condicionador de solo com garantia de aumento de CTC, carbono, matéria orgânica e retenção de água."
   },
   {
-    "file": "produto-bunema.jpg",
+    "file": "produto-bunema.webp",
     "kind": "produto",
     "name": "Bunema",
     "brand": "Eastman",
     "description": "Controle efetivo de nematóides, doenças de solo, plantas daninhas e formigas cortadeiras, em uma única aplicação e sem deixar resíduo."
   },
   {
-    "file": "produto-granmag.jpg",
+    "file": "produto-granmag.webp",
     "kind": "produto",
     "name": "Granmag",
     "brand": "Microsolo",
     "description": "Fertilizantes granulados com micronutrientes combinados em um único grânulo a base de B, Mg, Cu, Mn, S e Zn."
   },
   {
-    "file": "produto-kfort.jpg",
+    "file": "produto-kfort.webp",
     "kind": "produto",
     "name": "Kfort",
     "brand": "Verde Agritech",
@@ -280,14 +280,14 @@
     "description": ""
   },
   {
-    "file": "produto-calcifertil.jpg",
+    "file": "produto-calcifertil.webp",
     "kind": "produto",
     "name": "Calcifertil",
     "brand": "Belocal",
     "description": "Corretivo Semicalcinado 40 20 I 47 23"
   },
   {
-    "file": "produto-oxyfertil.jpg",
+    "file": "produto-oxyfertil.webp",
     "kind": "produto",
     "name": "Oxyfertil",
     "brand": "Belocal",

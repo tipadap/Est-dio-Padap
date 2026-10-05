@@ -781,16 +781,20 @@ async function insertProduct(url, asset) {
   const h = Math.round(nat.h * k);
   const y = 150;
   const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  // Texto claro em slide escuro, escuro em slide claro.
+  const bg = (curSlide().bg || '#FFFFFF').replace('#', '');
+  const lum = (0.299 * parseInt(bg.slice(0, 2), 16) + 0.587 * parseInt(bg.slice(2, 4), 16) + 0.114 * parseInt(bg.slice(4, 6), 16)) / 255;
+  const dark = lum < 0.5;
   const img = { id: uid(), type: 'image', x: Math.round((W - w) / 2), y, w, h, src: url, mask: 'none', fit: 'contain', placeholder: '' };
   const name = {
     id: uid(), type: 'text', x: 360, y: y + h + 30, w: 1200, h: 80,
     html: esc(asset.name), placeholder: 'Nome do produto',
-    style: { fontFamily: 'Space Grotesk', fontSize: 56, color: BRAND.teal, align: 'center', valign: 'top', lineHeight: 1.1, bold: true },
+    style: { fontFamily: 'Space Grotesk', fontSize: 56, color: dark ? BRAND.white : BRAND.teal, align: 'center', valign: 'top', lineHeight: 1.1, bold: true },
   };
   const desc = {
     id: uid(), type: 'text', x: 410, y: y + h + 115, w: 1100, h: 150,
     html: esc(asset.description || ''), placeholder: 'Descrição do produto',
-    style: { fontFamily: 'Space Grotesk', fontSize: 32, color: BRAND.teal2, align: 'center', valign: 'top', lineHeight: 1.35, bold: false },
+    style: { fontFamily: 'Space Grotesk', fontSize: 32, color: dark ? BRAND.greenSoft : BRAND.teal2, align: 'center', valign: 'top', lineHeight: 1.35, bold: false },
   };
   curSlide().elements.push(img, name, desc);
   renderStage();
