@@ -1,5 +1,5 @@
 import { readBoot, mountThumb, api, toast } from './render.js';
-import { TEMPLATES, buildPresentation } from './templates.js';
+import { TEMPLATES, buildPresentation, templatePhotos } from './templates.js';
 import { presCard } from './lib-card.js';
 
 const boot = readBoot();
@@ -24,9 +24,9 @@ for (const t of TEMPLATES) {
   card.className = 'tpl-card';
   card.innerHTML = '<div class="thumb"></div><div class="meta"><strong></strong><span></span></div>';
   card.querySelector('strong').textContent = t.name;
-  card.querySelector('span').textContent = `${t.tagline} · ${t.build('').length} slides`;
+  card.querySelector('span').textContent = `${t.tagline} · ${t.build(templatePhotos(t.id)).length} slides`;
   card.setAttribute('aria-label', `Criar a partir do modelo ${t.name}`);
-  mountThumb(card.querySelector('.thumb'), t.build(photos[t.id] || '')[0]);
+  mountThumb(card.querySelector('.thumb'), t.build(templatePhotos(t.id, photos))[0]);
   card.addEventListener('click', () => create(t.id));
   grid.appendChild(card);
 }

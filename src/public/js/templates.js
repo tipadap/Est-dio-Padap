@@ -190,6 +190,26 @@ export const LAYOUT_ORDER = ['capa', 'capaSimples', 'secao', 'conteudo', 'duasCo
 
 // ---- Modelos prontos ----------------------------------------------------
 
+// Fotos padrão dos modelos (src/public/img/modelos). A capa pode ser trocada pelo admin
+// em Imagens > Usar como > Capa do modelo.
+const IMG = (n) => `/static/img/modelos/${n}.jpg`;
+export const DEFAULT_PHOTOS = {
+  institucional: { cover: IMG('cenoura-por-do-sol-capa'), side: IMG('pivo-irrigacao-vertical') },
+  resultados: { cover: IMG('cenoura-dia-capa'), side: IMG('pivo-irrigacao-vertical') },
+  planejamento: { cover: '', side: '' },
+  mercado: { cover: IMG('beterraba-capa'), side: IMG('cenoura-dia-vertical') },
+  inovacao: { cover: IMG('alho-brotando-capa'), side: IMG('cenoura-por-do-sol-vertical') },
+  sustentabilidade: { cover: IMG('pivo-irrigacao-capa'), side: IMG('alho-brotando-vertical') },
+};
+
+/** Fotos de um modelo: padrão + capa definida pelo admin (se houver). */
+export function templatePhotos(id, overrides = {}) {
+  const d = DEFAULT_PHOTOS[id] || { cover: '', side: '' };
+  return { cover: overrides[id] || d.cover, side: d.side };
+}
+
+
+
 const L = (layout, c) => LAYOUTS[layout].build(c);
 
 export const TEMPLATES = [
@@ -198,7 +218,7 @@ export const TEMPLATES = [
     name: 'Apresentação Institucional',
     tagline: 'Nossa terra mais produtiva.',
     build: (p) => [
-      L('capa', { title: 'Apresentação Institucional', subtitle: 'Nossa terra mais produtiva.', photo: p }),
+      L('capa', { title: 'Apresentação Institucional', subtitle: 'Nossa terra mais produtiva.', photo: p.cover }),
       L('secao', { number: '01', title: 'Quem somos', subtitle: 'PADAP Produtividade Agrícola' }),
       L('conteudo', {
         title: 'Quem somos',
@@ -218,6 +238,7 @@ export const TEMPLATES = [
         right: ul(['Nutrição vegetal e manejo agronômico', 'Suporte técnico especializado', 'Inovação e parcerias estratégicas']),
       }),
       L('imagemTexto', {
+        photo: p.side,
         title: 'Pilares da marca',
         body: ul(['Integridade', 'Parceria', 'Qualidade', 'Inovação', 'Sustentabilidade', 'Compromisso com o cliente']),
       }),
@@ -229,10 +250,11 @@ export const TEMPLATES = [
     name: 'Resultados do Campo',
     tagline: 'Dados que cultivam o futuro.',
     build: (p) => [
-      L('capa', { title: 'Resultados do Campo', subtitle: 'Dados que cultivam o futuro.', photo: p }),
+      L('capa', { title: 'Resultados do Campo', subtitle: 'Dados que cultivam o futuro.', photo: p.cover }),
       L('secao', { number: '01', title: 'Safra 2025/26', subtitle: 'Área, cultura e manejo avaliados' }),
       L('numeros', { title: 'Resultados da safra', items: [['00 sc/ha', 'produtividade média'], ['+00%', 'ganho sobre a testemunha'], ['00 ha', 'área acompanhada']] }),
       L('imagemTexto', {
+        photo: p.side,
         title: 'Área demonstrativa',
         body: ul(['Propriedade: nome da fazenda', 'Município / UF', 'Cultura e cultivar', 'Tratamentos avaliados']),
       }),
@@ -252,7 +274,7 @@ export const TEMPLATES = [
     name: 'Planejamento Estratégico',
     tagline: 'Direcionando novas conquistas.',
     build: (p) => [
-      L('capa', { title: 'Planejamento Estratégico', subtitle: 'Direcionando novas conquistas.', photo: p }),
+      L('capa', { title: 'Planejamento Estratégico', subtitle: 'Direcionando novas conquistas.', photo: p.cover }),
       L('conteudo', { title: 'Onde estamos', body: ul(['Cenário atual', 'Principais conquistas do período', 'Desafios identificados']) }),
       L('secao', { number: '01', title: 'Objetivos', subtitle: 'O que queremos alcançar' }),
       L('duasColunas', {
@@ -272,7 +294,7 @@ export const TEMPLATES = [
     name: 'Mercado e Oportunidades',
     tagline: 'Conexões para um agro mais forte.',
     build: (p) => [
-      L('capa', { title: 'Mercado e Oportunidades', subtitle: 'Conexões para um agro mais forte.', photo: p }),
+      L('capa', { title: 'Mercado e Oportunidades', subtitle: 'Conexões para um agro mais forte.', photo: p.cover }),
       L('conteudo', { title: 'Cenário do mercado', body: ul(['Tendências do setor', 'Preços e demanda', 'Clima e safra']) }),
       L('numeros', { title: 'Mercado em números', items: [['R$ 00', 'preço médio da saca'], ['00%', 'variação no período'], ['00 mi t', 'produção estimada']] }),
       L('duasColunas', {
@@ -282,7 +304,7 @@ export const TEMPLATES = [
         rightTitle: 'Pontos de atenção',
         right: ul(['Risco 1', 'Risco 2']),
       }),
-      L('imagemTexto', { title: 'Como a PADAP pode ajudar', body: ul(['Planejamento nutricional', 'Suporte técnico em campo', 'Parcerias estratégicas']) }),
+      L('imagemTexto', { photo: p.side, title: 'Como a PADAP pode ajudar', body: ul(['Planejamento nutricional', 'Suporte técnico em campo', 'Parcerias estratégicas']) }),
       L('encerramento'),
     ],
   },
@@ -291,8 +313,8 @@ export const TEMPLATES = [
     name: 'Inovação que Produz',
     tagline: 'Tecnologia hoje para o amanhã.',
     build: (p) => [
-      L('capa', { title: 'Inovação que Produz', subtitle: 'Tecnologia hoje para o amanhã.', photo: p }),
-      L('imagemTexto', { title: 'Nova solução', body: 'Descreva a tecnologia, o produto ou o serviço e o problema que ele resolve no campo.' }),
+      L('capa', { title: 'Inovação que Produz', subtitle: 'Tecnologia hoje para o amanhã.', photo: p.cover }),
+      L('imagemTexto', { photo: p.side, title: 'Nova solução', body: 'Descreva a tecnologia, o produto ou o serviço e o problema que ele resolve no campo.' }),
       L('conteudo', { title: 'Como funciona', body: ul(['Etapa 1', 'Etapa 2', 'Etapa 3']) }),
       L('numeros', { title: 'Resultados', items: [['+00%', 'produtividade'], ['-00%', 'custo por hectare'], ['00', 'áreas validadas']] }),
       L('citacao', { quote: 'Inovação está no nosso DNA.', author: 'PADAP Produtividade Agrícola' }),
@@ -304,12 +326,12 @@ export const TEMPLATES = [
     name: 'Sustentabilidade no Agro',
     tagline: 'Produtividade para um futuro melhor.',
     build: (p) => [
-      L('capa', { title: 'Sustentabilidade no Agro', subtitle: 'Produtividade para um futuro melhor.', photo: p }),
+      L('capa', { title: 'Sustentabilidade no Agro', subtitle: 'Produtividade para um futuro melhor.', photo: p.cover }),
       L('conteudo', {
         title: 'Nosso compromisso',
         body: ul(['Práticas agrícolas responsáveis', 'Preservação dos recursos naturais', 'Redução do impacto ambiental', 'Segurança alimentar a longo prazo']),
       }),
-      L('imagemTexto', { title: 'Na prática', body: 'Mostre aqui um projeto, uma área ou uma prática sustentável aplicada no campo.' }),
+      L('imagemTexto', { photo: p.side, title: 'Na prática', body: 'Mostre aqui um projeto, uma área ou uma prática sustentável aplicada no campo.' }),
       L('numeros', { title: 'Impacto', items: [['00 t', 'CO₂ evitado'], ['00%', 'uso eficiente de insumos'], ['00 ha', 'em manejo sustentável']] }),
       L('duasColunas', {
         title: 'Ambiental, social e econômico',
@@ -329,5 +351,5 @@ export function buildPresentation(templateId, photos = {}) {
     return { title: 'Apresentação sem título', data: { version: 1, theme: 'branco', slides: [L('capaSimples', {})] } };
   }
   const t = TEMPLATES.find((x) => x.id === templateId);
-  return { title: t.name, data: { version: 1, theme: t.id, slides: t.build(photos[t.id] || '') } };
+  return { title: t.name, data: { version: 1, theme: t.id, slides: t.build(templatePhotos(t.id, photos)) } };
 }
