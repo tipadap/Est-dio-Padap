@@ -1,0 +1,429 @@
+[
+  {
+    "file": "produto-yara-basa.jpg",
+    "kind": "produto",
+    "name": "YaraBasa",
+    "brand": "Yara",
+    "description": "7 nutrientes (N, P, K Mg, Ca, S, B, Mn e Zn) em um único grânulo para adubação de base."
+  },
+  {
+    "file": "produto-yara-liva.jpg",
+    "kind": "produto",
+    "name": "YaraLiva",
+    "brand": "Yara",
+    "description": "Nitrato de Cálcio e Boro solúveis em água."
+  },
+  {
+    "file": "produto-yara-mila.jpg",
+    "kind": "produto",
+    "name": "YaraMila",
+    "brand": "Yara",
+    "description": "7 nutrientes (N, P, K Mg, S, B e Zn) em um único grânulo - 3 fases de liberação de fósforo e 15% de sulfato de potássio."
+  },
+  {
+    "file": "produto-yara-rega.jpg",
+    "kind": "produto",
+    "name": "YaraRega",
+    "brand": "Yara",
+    "description": "Ideal para fertirrigação com 7 nutrientes (N, P, K, Mg, S, B e Zn) em um único grânulo, além de ser formulado com Sulfato de Potássio."
+  },
+  {
+    "file": "produto-yara-mila-complex.jpg",
+    "kind": "produto",
+    "name": "YaraMila Complex",
+    "brand": "Yara",
+    "description": "7 nutrientes (N, P, K, Mg, S, B, Fe, Mn) em um único grânulo. 3 fases de liberação de fósforo e de sulfato de potássio."
+  },
+  {
+    "file": "produto-amazinc.jpg",
+    "kind": "produto",
+    "name": "Amazinc",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido concentrado de óxido de Zinco (350 g/l) e Mn (250 g/l)."
+  },
+  {
+    "file": "produto-biotrac.jpg",
+    "kind": "produto",
+    "name": "Biotrac",
+    "brand": "YaraVita",
+    "description": "Bioestmulante a base de Ascophyllum nodosum (117g/l), B (13g/l), Zn (13 g/l), N (65 g/l) e K (27 g/l)."
+  },
+  {
+    "file": "produto-bortrac.jpg",
+    "kind": "produto",
+    "name": "Bortrac",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido concentrado de Boro MEA (150 G/L)."
+  },
+  {
+    "file": "produto-coptrac.jpg",
+    "kind": "produto",
+    "name": "Coptrac",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido concentrado de cobre vermelho (500 g/l)."
+  },
+  {
+    "file": "produto-folicare.jpg",
+    "kind": "produto",
+    "name": "Folicare",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido voltado para enchimento a base de N (120 g/l), K (390 g/l), S (18 g/l) e Mg (28g/l)."
+  },
+  {
+    "file": "produto-glytrel-mnp.jpg",
+    "kind": "produto",
+    "name": "Glytrel MNP",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido para aplicações em soja junto com glifosato a base de P (87 g/l) e Mn (87 g/l)."
+  },
+  {
+    "file": "produto-yara-cafe.jpg",
+    "kind": "produto",
+    "name": "YaraVita Café",
+    "brand": "YaraVita",
+    "description": "YaraVita CAFÉ é o fertilizante foliar de N (69g/l), Mg (70g/l) Boro (70g/l), Zinco (140 g/l) para aplicação foliar ou diretamente no solo."
+  },
+  {
+    "file": "produto-magtrac.jpg",
+    "kind": "produto",
+    "name": "Magtrac",
+    "brand": "YaraVita",
+    "description": "Bioestimulante a base de Mg (79,8 g/l) e Ascophyllum nodosum."
+  },
+  {
+    "file": "produto-mancozin.jpg",
+    "kind": "produto",
+    "name": "Mancozin",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido Mn (327 g/l), Cu (52 g/l) e Zn (80 g/l)."
+  },
+  {
+    "file": "produto-mantrac.jpg",
+    "kind": "produto",
+    "name": "Mantrac",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido com Mn (500 g/l) e N (69,2 g/l)."
+  },
+  {
+    "file": "produto-zintrac.jpg",
+    "kind": "produto",
+    "name": "Zintrac",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido concentrado de óxido de Zn (700 g/l)."
+  },
+  {
+    "file": "produto-caltrac.jpg",
+    "kind": "produto",
+    "name": "Caltrac",
+    "brand": "YaraVita",
+    "description": "Fertilizante líquido concentrado em N (61 g/l) e Cu (400 g/l)."
+  },
+  {
+    "file": "produto-quebec.jpg",
+    "kind": "produto",
+    "name": "Quebec",
+    "brand": "Goplan",
+    "description": "10% Ecklonia Maxima + 17% Carbono Orgânicos + 50% aminoácidos + micronutrientes que auxiliam na tolerância da cultura ao estresse e bioestimulam a planta a florescer."
+  },
+  {
+    "file": "produto-sysco.jpg",
+    "kind": "produto",
+    "name": "Sysco",
+    "brand": "Goplan",
+    "description": "Indutor de resistência a base de Cobre."
+  },
+  {
+    "file": "produto-shelby.jpg",
+    "kind": "produto",
+    "name": "Shelby",
+    "brand": "Goplan",
+    "description": "Nematicida e Fungicida à base de bactérias (Bacillus subtilis, Bacillus velezensis, Bacillus pumilus) e fungos (Trichoderma harzianum)"
+  },
+  {
+    "file": "produto-kopi.jpg",
+    "kind": "produto",
+    "name": "Kopi",
+    "brand": "Goplan",
+    "description": "Complexo de nutrientes a base de sais B, Zn, Mn, K2O, S, Cu e Mg."
+  },
+  {
+    "file": "produto-maggo.jpg",
+    "kind": "produto",
+    "name": "Maggo",
+    "brand": "Goplan",
+    "description": "Fertilizante líquido a base de Mg 8% + Aminoácidos 3%."
+  },
+  {
+    "file": "produto-touche.jpg",
+    "kind": "produto",
+    "name": "Touché",
+    "brand": "Goplan",
+    "description": "Potencializador de herbicida."
+  },
+  {
+    "file": "produto-blackgold.jpg",
+    "kind": "produto",
+    "name": "Blackgold",
+    "brand": "Fortgreen",
+    "description": "Condicionador de solo com alto teor de substâncias húmicas e fúlvicas e Ph ácido."
+  },
+  {
+    "file": "produto-li-700.jpg",
+    "kind": "produto",
+    "name": "LI 700",
+    "brand": "Fortgreen",
+    "description": "Adjuvante com Ph tamponante, indicado para pulverização de herbicidas, eficiência anti-deriva e número 01 em vendas no mundo."
+  },
+  {
+    "file": "produto-router.jpg",
+    "kind": "produto",
+    "name": "Router",
+    "brand": "Fortgreen",
+    "description": "Formulação com compostos orgânicos para ativação do dreno das culturas, enriquecidos com aminoácidos e micronutrientes que aumentam a produtividade."
+  },
+  {
+    "file": "produto-curative.jpg",
+    "kind": "produto",
+    "name": "Curative",
+    "brand": "Fortgreen",
+    "description": "Tecnologia para proteção de plantas a base de fosfito de potássio, cobre e níquel. Possui fósforo nutricional, pótassio, magnésio e enxofre, para fornecer energia para as plantas."
+  },
+  {
+    "file": "produto-drive.jpg",
+    "kind": "produto",
+    "name": "Drive",
+    "brand": "Fortgreen",
+    "description": "Adjuvante desenvolvido para reduzir deriva, melhorar espalhamento e aderência das gotas e acelerar absorção e translocação nas plantas, sem danificar a camada cerosa das folhas."
+  },
+  {
+    "file": "produto-parasol.jpg",
+    "kind": "produto",
+    "name": "Parasol",
+    "brand": "Santa Clara Agrociência",
+    "description": "Protege as plantas da exposição excessiva dos raios solares e minimiza o estresse causado pela alta temperatura. Possui tecnologia de nanopartículas, garantindo fácil mistura."
+  },
+  {
+    "file": "produto-salut.jpg",
+    "kind": "produto",
+    "name": "Salut",
+    "brand": "Santa Clara Agrociência",
+    "description": "Produto de contato a base de ácido fosforoso, fosfito de cobre e agentes sanitizantes hospitalares que além de atingir fungos e bactérias, promove a resistência de plantas."
+  },
+  {
+    "file": "produto-sulfeto-sk.jpg",
+    "kind": "produto",
+    "name": "Sulfeto SK",
+    "brand": "Santa Clara Agrociência",
+    "description": "Produto a base de Sulfeto de Potássio, atua na diferenciação do alho, atua no enchimento das culturas e também é desalojante de pragas. S (486,0 g/l), K (486,0 g/l)"
+  },
+  {
+    "file": "produto-matriz-g.jpg",
+    "kind": "produto",
+    "name": "Matriz G",
+    "brand": "Santa Clara Agrociência",
+    "description": "Produto concentrado de nutrientes e compostos orgânicos. Contém Ascophyllum nodosum, que auxilia na emergência das plantas e promove maior resistência a estresses climáticos."
+  },
+  {
+    "file": "produto-arkophos.jpg",
+    "kind": "produto",
+    "name": "Arkophos",
+    "brand": "Arko",
+    "description": "Fertilizantes fosfatados com alta concentração de fósforo solúvel em ácido cítrico, cálcio, enxofre e outros minerais."
+  },
+  {
+    "file": "produto-blackbio.jpg",
+    "kind": "produto",
+    "name": "Blackbio",
+    "brand": "Arko",
+    "description": "Condicionador de solo com garantia de aumento de CTC, carbono, matéria orgânica e retenção de água."
+  },
+  {
+    "file": "produto-bunema.jpg",
+    "kind": "produto",
+    "name": "Bunema",
+    "brand": "Eastman",
+    "description": "Controle efetivo de nematóides, doenças de solo, plantas daninhas e formigas cortadeiras, em uma única aplicação e sem deixar resíduo."
+  },
+  {
+    "file": "produto-granmag.jpg",
+    "kind": "produto",
+    "name": "Granmag",
+    "brand": "Microsolo",
+    "description": "Fertilizantes granulados com micronutrientes combinados em um único grânulo a base de B, Mg, Cu, Mn, S e Zn."
+  },
+  {
+    "file": "produto-kfort.jpg",
+    "kind": "produto",
+    "name": "Kfort",
+    "brand": "Verde Agritech",
+    "description": "Fertilizante a base de potássio, livre de cloro e fonte silício, magnésio e manganês."
+  },
+  {
+    "file": "produto-milheto.jpg",
+    "kind": "produto",
+    "name": "Milheto",
+    "brand": "Sementes de cobertura",
+    "description": ""
+  },
+  {
+    "file": "produto-blends.jpg",
+    "kind": "produto",
+    "name": "Blends",
+    "brand": "Sementes de cobertura",
+    "description": ""
+  },
+  {
+    "file": "produto-brachiaria-ruziziensis-e-decumbens.jpg",
+    "kind": "produto",
+    "name": "Brachiaria Ruziziensis e Decumbens",
+    "brand": "Sementes de cobertura",
+    "description": ""
+  },
+  {
+    "file": "produto-calcifertil.jpg",
+    "kind": "produto",
+    "name": "Calcifertil",
+    "brand": "Belocal",
+    "description": "Corretivo Semicalcinado 40 20 I 47 23"
+  },
+  {
+    "file": "produto-oxyfertil.jpg",
+    "kind": "produto",
+    "name": "Oxyfertil",
+    "brand": "Belocal",
+    "description": "Corretivo Calcinado 60 30"
+  },
+  {
+    "file": "produto-sementes-de-milho-sempre.jpg",
+    "kind": "produto",
+    "name": "Sementes de milho Sempre",
+    "brand": "Sempre",
+    "description": "Variedades com alto potencial produtivo, alta tolerância ao complexo de enfezamento, excelente sanidade de folhas e qualidade de colmo e raiz."
+  },
+  {
+    "file": "produto-sementes-agrocinco.jpg",
+    "kind": "produto",
+    "name": "Sementes Agrocinco",
+    "brand": "Agrocinco",
+    "description": "Sementes de repolho e cebola amarela para todas as janelas de plantio, tolerante a doenças e excelente padrão de qualidade."
+  },
+  {
+    "file": "produto-sementes-hm-clause.jpg",
+    "kind": "produto",
+    "name": "Sementes HM Clause",
+    "brand": "HM Clause",
+    "description": "Sementes de cebola roxa e repolho com excelente padrão de qualidade e uniformização, garantindo produtividade ao produtor rural."
+  },
+  {
+    "file": "logo-yara.png",
+    "kind": "logo",
+    "name": "Logo Yara",
+    "brand": "Yara",
+    "description": ""
+  },
+  {
+    "file": "logo-yaravita.png",
+    "kind": "logo",
+    "name": "Logo YaraVita",
+    "brand": "YaraVita",
+    "description": ""
+  },
+  {
+    "file": "logo-goplan.png",
+    "kind": "logo",
+    "name": "Logo Goplan",
+    "brand": "Goplan",
+    "description": ""
+  },
+  {
+    "file": "logo-fortgreen.png",
+    "kind": "logo",
+    "name": "Logo Fortgreen",
+    "brand": "Fortgreen",
+    "description": ""
+  },
+  {
+    "file": "logo-santa-clara-agrociencia.png",
+    "kind": "logo",
+    "name": "Logo Santa Clara Agrociência",
+    "brand": "Santa Clara Agrociência",
+    "description": ""
+  },
+  {
+    "file": "logo-arko.png",
+    "kind": "logo",
+    "name": "Logo Arko",
+    "brand": "Arko",
+    "description": ""
+  },
+  {
+    "file": "logo-sempre.png",
+    "kind": "logo",
+    "name": "Logo Sempre",
+    "brand": "Sempre",
+    "description": ""
+  },
+  {
+    "file": "pagina-1.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 1: Capa",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-2.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 2: Yara",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-3.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 3: YaraVita",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-4.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 4: Goplan",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-5.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 5: Fortgreen",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-6.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 6: Santa Clara Agrociência",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-7.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 7: Arko, Eastman, Verde, Microsolo e sementes de cobertura",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-8.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 8: Belocal, Sempre, Agrocinco e HM Clause",
+    "brand": "",
+    "description": ""
+  },
+  {
+    "file": "pagina-9.jpg",
+    "kind": "pagina",
+    "name": "Portfólio 2026 — página 9: Contatos",
+    "brand": "",
+    "description": ""
+  }
+]

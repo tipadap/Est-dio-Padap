@@ -197,6 +197,25 @@ test('imagens: só admin envia ao Banco; usuário envia às próprias', async ()
   assert.ok(!(await request(app).get('/login')).text.includes(banco.body.asset.url));
 });
 
+test('Portfólio 2026 embutido aparece no Portfólio e os arquivos existem', async () => {
+  const res = await ana.agent.get('/api/assets?category=portfolio');
+  const builtin = res.body.assets.filter((a) => a.builtin);
+  assert.ok(builtin.filter((a) => a.kind === 'produto').length >= 40, 'produtos do portfólio');
+  const yara = builtin.find((a) => a.name === 'YaraBasa');
+  assert.strictEqual(yara.brand, 'Yara');
+  assert.match(yara.description, /7 nutrientes/);
+  for (const a of builtin) {
+    assert.ok(fs.existsSync(path.join(__dirname, '..', 'src', 'public', a.url.replace('/static/', ''))), a.url);
+  }
+  // Imagem do portfólio pode ser usada num slide e como capa de modelo.
+  const d = cleanPresentation({ slides: [{ elements: [{ type: 'image', src: yara.url, x: 0, y: 0, w: 10, h: 10 }] }] });
+  assert.strictEqual(d.slides[0].elements[0].src, yara.url);
+  const s = await admin.agent.post('/api/settings').set('x-csrf-token', admin.token).send({ key: 'tpl:mercado', value: yara.url });
+  assert.strictEqual(s.status, 200);
+  // Não aparece no Banco de imagens nem pode ser apagado como upload.
+  assert.ok(!(await ana.agent.get('/api/assets?category=banco')).body.assets.some((a) => a.builtin));
+});
+
 test('admin cria usuário com senha temporária e troca obrigatória', async () => {
   const page = await admin.agent.get('/admin/usuarios/novo');
   const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];

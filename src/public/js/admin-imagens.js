@@ -35,6 +35,12 @@ function draw() {
     card.querySelector('img').src = a.url;
     const title = card.querySelector('input');
     title.value = a.title;
+    if (a.builtin) {
+      title.readOnly = true;
+      title.title = 'Item do Portfólio 2026 (embutido no sistema)';
+      card.querySelector('.btn-danger').hidden = true;
+      card.querySelector('.tags').insertAdjacentHTML('beforebegin', '<span class="badge" style="justify-self:start">Portfólio 2026</span>');
+    }
     title.addEventListener('change', async () => {
       try {
         await api('PATCH', `/api/assets/${a.id}`, { title: title.value });

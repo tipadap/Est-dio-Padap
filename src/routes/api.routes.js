@@ -4,6 +4,7 @@ const express = require('express');
 const config = require('../config');
 const presentations = require('../lib/presentations');
 const assets = require('../lib/assets');
+const portfolio = require('../lib/portfolio');
 const settings = require('../lib/settings');
 const { cleanPresentation, cleanTitle } = require('../lib/sanitize');
 const { handleImage, discardUpload } = require('../lib/upload');
@@ -100,7 +101,9 @@ const CATEGORIES = ['banco', 'portfolio', 'user'];
 
 router.get('/assets', (req, res) => {
   const category = CATEGORIES.includes(req.query.category) ? req.query.category : 'banco';
-  res.json({ assets: assets.list(category, req.user.id) });
+  const list = assets.list(category, req.user.id);
+  // Portfólio: imagens enviadas pelo admin + o Portfólio 2026 embutido no sistema.
+  res.json({ assets: category === 'portfolio' ? list.concat(portfolio.list()) : list });
 });
 
 // Banco e Portfólio: só admin. "user": qualquer usuário (imagens próprias).
@@ -156,7 +159,10 @@ router.post('/settings', requireAdmin, csrf.verify, (req, res) => {
   const { key, value } = req.body || {};
   if (!settings.KEYS.includes(key)) return bad(res, 'Configuração desconhecida.');
   if (value) {
-    const ok = typeof value === 'string' && value.startsWith('/uploads/') && assets.list('banco').concat(assets.list('portfolio')).some((a) => a.url === value);
+    const ok =
+      typeof value === 'string' &&
+      (portfolio.hasUrl(value) ||
+        (value.startsWith('/uploads/') && assets.list('banco').concat(assets.list('portfolio')).some((a) => a.url === value)));
     if (!ok) return bad(res, 'Escolha uma imagem do Banco de imagens ou do Portfólio.');
   }
   settings.set(key, value || null);

@@ -188,3 +188,7 @@ html, body { height: 100%; overflow: hidden; }
 /* Seta de menu dentro de um botão (ex.: Novo slide): área de clique maior */
 .rbtn .caret[data-cmd] { padding: 6px 4px; margin: -6px -6px -6px 0; border-radius: 6px; cursor: pointer; }
 .rbtn .caret[data-cmd]:hover { background: var(--green-100); }
+.picker-filters { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin: -4px 0 14px; }
+.picker-filters select { width: auto; height: 36px; font-size: 14px; }
+.picker-filters .check { font-size: 14px; margin-left: auto; }
+.picker-grid.contain img { object-fit: contain; background: #fff; padding: 6px; }

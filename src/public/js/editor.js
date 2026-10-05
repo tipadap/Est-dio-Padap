@@ -760,15 +760,43 @@ function setImage(el, url) {
   commit();
 }
 
-async function insertImage(url) {
+async function insertImage(url, asset = null, withText = false) {
   const el = selEl();
   if (el && el.type === 'image') return setImage(el, url);
+  if (withText && asset && asset.kind === 'produto') return insertProduct(url, asset);
   const nat = await loadSize(url);
   const k = Math.min(1000 / nat.w, 700 / nat.h, 1);
   const w = Math.round(nat.w * k);
   const h = Math.round(nat.h * k);
   addElement({ id: uid(), type: 'image', x: Math.round((W - w) / 2), y: Math.round((H - h) / 2), w, h, src: url, mask: 'none', fit: 'cover', placeholder: '' });
   return undefined;
+}
+
+/** Produto do portfólio: foto + nome + descrição, centralizados no slide. */
+async function insertProduct(url, asset) {
+  exitEdit();
+  const nat = await loadSize(url);
+  const k = Math.min(560 / nat.w, 560 / nat.h);
+  const w = Math.round(nat.w * k);
+  const h = Math.round(nat.h * k);
+  const y = 150;
+  const esc = (t) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const img = { id: uid(), type: 'image', x: Math.round((W - w) / 2), y, w, h, src: url, mask: 'none', fit: 'contain', placeholder: '' };
+  const name = {
+    id: uid(), type: 'text', x: 360, y: y + h + 30, w: 1200, h: 80,
+    html: esc(asset.name), placeholder: 'Nome do produto',
+    style: { fontFamily: 'Space Grotesk', fontSize: 56, color: BRAND.teal, align: 'center', valign: 'top', lineHeight: 1.1, bold: true },
+  };
+  const desc = {
+    id: uid(), type: 'text', x: 410, y: y + h + 115, w: 1100, h: 150,
+    html: esc(asset.description || ''), placeholder: 'Descrição do produto',
+    style: { fontFamily: 'Space Grotesk', fontSize: 32, color: BRAND.teal2, align: 'center', valign: 'top', lineHeight: 1.35, bold: false },
+  };
+  curSlide().elements.push(img, name, desc);
+  renderStage();
+  S.sel = img.id;
+  drawSelection();
+  commit();
 }
 
 function deleteSelected() {
@@ -1069,7 +1097,17 @@ const PICKER_TABS = [
 
 function openPicker(category, onPick = insertImage) {
   const m = modal('Inserir imagem', { wide: true });
-  m.body.innerHTML = `<div class="picker-tabs"></div><div class="picker-grid"></div>`;
+  m.body.innerHTML = `<div class="picker-tabs"></div><div class="picker-filters" hidden></div><div class="picker-grid"></div>`;
+  const filters = m.body.querySelector('.picker-filters');
+  filters.innerHTML = `
+    <select class="text-input" data-f="kind" aria-label="Tipo"><option value="">Tudo</option><option value="produto">Produtos</option><option value="logo">Logos das marcas</option><option value="pagina">Páginas do portfólio</option></select>
+    <select class="text-input" data-f="brand" aria-label="Marca"><option value="">Todas as marcas</option></select>
+    <label class="check"><input type="checkbox" data-f="withText" checked> Inserir produto com nome e descrição</label>`;
+  const fKind = filters.querySelector('[data-f=kind]');
+  const fBrand = filters.querySelector('[data-f=brand]');
+  const fText = filters.querySelector('[data-f=withText]');
+  fKind.addEventListener('change', () => draw());
+  fBrand.addEventListener('change', () => draw());
   const tabs = m.body.querySelector('.picker-tabs');
   const grid = m.body.querySelector('.picker-grid');
   let cat = category;
@@ -1105,7 +1143,15 @@ function openPicker(category, onPick = insertImage) {
   function draw() {
     const q = search.value.trim().toLowerCase();
     grid.replaceChildren();
-    const list = items.filter((a) => !q || a.title.toLowerCase().includes(q));
+    const isPf = cat === 'portfolio';
+    filters.hidden = !isPf;
+    grid.classList.toggle('contain', isPf);
+    const list = items.filter(
+      (a) =>
+        (!q || `${a.title} ${a.description || ''}`.toLowerCase().includes(q)) &&
+        (!isPf || !fKind.value || (a.kind || 'produto') === fKind.value) &&
+        (!isPf || !fBrand.value || a.brand === fBrand.value)
+    );
     if (!list.length) {
       const msg =
         cat === 'user'
@@ -1120,9 +1166,10 @@ function openPicker(category, onPick = insertImage) {
       b.innerHTML = '<img loading="lazy" alt=""><span></span>';
       b.querySelector('img').src = a.url;
       b.querySelector('span').textContent = a.title || 'Sem título';
+      if (a.description) b.title = `${a.name}: ${a.description}`;
       b.addEventListener('click', () => {
         m.close();
-        onPick(a.url);
+        onPick(a.url, a, cat === 'portfolio' && fText.checked);
       });
       grid.appendChild(b);
     }
@@ -1133,6 +1180,8 @@ function openPicker(category, onPick = insertImage) {
     grid.innerHTML = '<div class="muted">Carregando…</div>';
     try {
       items = (await api('GET', `/api/assets?category=${cat}`)).assets;
+      const brands = [...new Set(items.map((a) => a.brand).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'pt-BR'));
+      fBrand.replaceChildren(new Option('Todas as marcas', ''), ...brands.map((b) => new Option(b, b)));
     } catch (e) {
       items = [];
       toast(e.message, 'error');
