@@ -1,0 +1,6 @@
+<%- include('partials/head', { extraCss: 'present' }) %>
+<body style="background:#031A20">
+<script type="application/json" id="boot"><%- json(boot) %></script>
+<script type="module" src="/static/js/apresentar.js?v=<%= version %>"></script>
+</body>
+</html>

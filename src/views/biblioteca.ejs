@@ -1,0 +1,19 @@
+<%- include('partials/shell-start') %>
+<div class="page">
+  <div class="page-head">
+    <h1>Biblioteca</h1>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <input class="text-input search" type="search" id="search" placeholder="Buscar apresentação…" aria-label="Buscar apresentação">
+      <a class="btn btn-primary" href="/#novo"><%- icon('plus') %> Nova apresentação</a>
+    </div>
+  </div>
+  <%- include('partials/flash') %>
+  <div class="tabs" role="tablist">
+    <button class="tab active" type="button" data-tab="mine">Minhas apresentações</button>
+    <button class="tab" type="button" data-tab="team">Compartilhadas pela equipe</button>
+  </div>
+  <div class="lib-grid" id="grid"></div>
+</div>
+<script type="application/json" id="boot"><%- json(boot) %></script>
+<script type="module" src="/static/js/biblioteca.js?v=<%= version %>"></script>
+<%- include('partials/shell-end') %>

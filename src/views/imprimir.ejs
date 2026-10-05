@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= title %></title>
+  <link rel="icon" href="/static/img/favicon.png">
+  <link rel="stylesheet" href="/static/css/app.css?v=<%= version %>">
+  <link rel="stylesheet" href="/static/css/slide.css?v=<%= version %>">
+  <style>
+    @page { size: 13.333in 7.5in; margin: 0; }
+    body { background: #E9EEF0; }
+    .print-help { max-width: 860px; margin: 24px auto; }
+    .pages { display: grid; gap: 24px; justify-content: center; padding-bottom: 40px; }
+    .page-slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: #fff; box-shadow: var(--shadow); }
+    .page-slide > .slide { position: absolute; left: 0; top: 0; transform: scale(0.666667); transform-origin: 0 0; }
+    @media print {
+      html, body { background: #fff; }
+      .print-help { display: none; }
+      .pages { display: block; padding: 0; }
+      .page-slide { box-shadow: none; break-after: page; page-break-after: always; width: 13.333in; height: 7.5in; }
+      .page-slide:last-child { break-after: auto; page-break-after: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="print-help alert alert-info">
+    <strong id="help-title">Imprimir</strong><br>
+    <span id="help-text">A janela de impressão abre automaticamente. Use orientação paisagem e ative “Gráficos de plano de fundo” para manter as cores.</span>
+    <div style="margin-top:10px"><button class="btn btn-primary btn-sm" type="button" id="print-btn">Abrir janela de impressão</button></div>
+  </div>
+  <div class="pages" id="pages"></div>
+  <script type="application/json" id="boot"><%- json(boot) %></script>
+  <script type="module" src="/static/js/imprimir.js?v=<%= version %>"></script>
+</body>
+</html>

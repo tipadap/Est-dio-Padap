@@ -1,0 +1,40 @@
+<%- include('partials/head') %>
+<body>
+<div class="login">
+  <section class="login-art" aria-hidden="true">
+    <% if (loginBg) { %><div class="photo" style="background-image:url('<%= loginBg %>')"></div><% } %>
+    <%- include('partials/grafismo') %>
+    <div class="login-brand"><img src="/static/img/padap-logo-branco.png" alt=""></div>
+  </section>
+  <section class="login-panel">
+    <form class="login-card" method="post" action="/login" novalidate>
+      <p class="hello">Bem-vindo ao</p>
+      <h1>Estúdio PADAP</h1>
+      <p class="lead">Acesse sua conta para continuar.</p>
+      <% if (error) { %><div class="alert alert-error" role="alert"><%= error %></div><% } %>
+      <% flashSuccess.forEach(function (m) { %><div class="alert alert-success"><%= m %></div><% }) %>
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="field">
+        <label for="email">E-mail</label>
+        <div class="input"><%- icon('mail') %><input id="email" name="email" type="email" autocomplete="username" placeholder="seu@email.com" value="<%= values.email %>" required autofocus></div>
+      </div>
+      <div class="field">
+        <label for="password">Senha</label>
+        <div class="input"><%- icon('lock') %><input id="password" name="password" type="password" autocomplete="current-password" placeholder="Digite sua senha" required>
+          <button class="eye" type="button" data-toggle-password="password" aria-label="Mostrar senha"><%- icon('eyeOff') %></button></div>
+      </div>
+      <div class="login-row">
+        <label class="check"><input type="checkbox" name="remember" checked> Lembrar-me</label>
+        <a href="/esqueci-senha">Esqueci minha senha</a>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Entrar <%- icon('arrowRight') %></button>
+      <div class="login-foot">
+        <span>Versão <%= version %></span>
+        <a href="<%= supportUrl %>"><%- icon('headset') %> Suporte PADAP</a>
+      </div>
+    </form>
+  </section>
+</div>
+<script type="module" src="/static/js/shell.js?v=<%= version %>"></script>
+</body>
+</html>

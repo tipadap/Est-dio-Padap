@@ -1,0 +1,35 @@
+<%- include('../partials/shell-start') %>
+<div class="page">
+  <div class="page-head">
+    <h1>Usuários</h1>
+    <a class="btn btn-primary" href="/admin/usuarios/novo"><%- icon('plus') %> Novo usuário</a>
+  </div>
+  <%- include('../partials/flash') %>
+  <% if (tempPassword) { const [who, pass] = tempPassword.split('|'); %>
+    <div class="alert alert-info">Senha temporária de <strong><%= who %></strong>: <span class="temp-pass"><%= pass %></span><br>
+      Anote e envie à pessoa — ela não será mostrada de novo. No primeiro acesso será pedida uma nova senha.</div>
+  <% } %>
+  <table class="table">
+    <thead><tr><th>Nome</th><th>E-mail</th><th>Perfil</th><th>Situação</th><th>Ações</th></tr></thead>
+    <tbody>
+    <% list.forEach(function (u) { %>
+      <tr>
+        <td><%= u.name %></td>
+        <td><%= u.email %></td>
+        <td><%= u.is_admin ? 'Administrador' : 'Usuário' %></td>
+        <td><span class="pill <%= u.is_active ? 'ok' : '' %>"><%= u.is_active ? 'Ativo' : 'Inativo' %></span></td>
+        <td class="actions">
+          <a class="btn btn-sm" href="/admin/usuarios/<%= u.id %>"><%- icon('edit') %> Editar</a>
+          <form method="post" action="/admin/usuarios/<%= u.id %>/senha" data-confirm="Gerar uma nova senha temporária para <%= u.email %>?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm" type="submit"><%- icon('key') %> Redefinir senha</button>
+          </form>
+          <form method="post" action="/admin/usuarios/<%= u.id %>/ativo">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>"><button class="btn btn-sm <%= u.is_active ? 'btn-danger' : '' %>" type="submit"><%= u.is_active ? 'Inativar' : 'Reativar' %></button>
+          </form>
+        </td>
+      </tr>
+    <% }) %>
+    </tbody>
+  </table>
+</div>
+<%- include('../partials/shell-end') %>

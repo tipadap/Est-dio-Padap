@@ -1,0 +1,35 @@
+{
+  "name": "estudio-padap",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Estúdio PADAP — criação de apresentações com a identidade visual da PADAP",
+  "type": "commonjs",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "create-admin": "node scripts/create-admin.js",
+    "test": "node --test --test-force-exit"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.2.0",
+    "better-sqlite3-session-store": "^0.1.0",
+    "connect-flash": "^0.1.1",
+    "dotenv": "^16.4.5",
+    "ejs": "^3.1.10",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.4.1",
+    "express-session": "^1.18.1",
+    "helmet": "^8.0.0",
+    "multer": "^2.0.1",
+    "pptxgenjs": "^4.0.1",
+    "sanitize-html": "^2.13.0"
+  },
+  "devDependencies": {
+    "supertest": "^7.0.0"
+  }
+}

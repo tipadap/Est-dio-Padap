@@ -1,0 +1,117 @@
+<%- include('partials/head', { extraCss: 'editor' }) %>
+<link rel="stylesheet" href="/static/css/present.css?v=<%= version %>">
+<body>
+<div class="ed">
+  <header class="ed-top">
+    <svg class="grafismo" viewBox="0 0 420 80" preserveAspectRatio="xMaxYMid slice" aria-hidden="true">
+      <path d="M180 90 V60 a70 70 0 0 1 70 -70 h80" fill="none" stroke="#1DBD2C" stroke-opacity=".8" stroke-width="2"/>
+      <path d="M260 90 V50 a60 60 0 0 1 60 -60 h120 v100 Z" fill="#1DBD2C" fill-opacity=".14"/>
+      <path d="M330 90 V60 a50 50 0 0 1 50 -50 h50" fill="none" stroke="#1DBD2C" stroke-opacity=".6" stroke-width="2"/>
+    </svg>
+    <a class="ed-home" href="/" title="Página Inicial"><img src="/static/img/padap-simbolo.png" alt="Página Inicial"></a>
+    <button class="ed-tab primary" type="button" data-cmd="present"><%- icon('presentation') %> <span>Apresentar</span></button>
+    <a class="ed-tab" href="/biblioteca"><%- icon('book') %> <span>Biblioteca</span></a>
+    <button class="ed-tab" type="button" data-cmd="share"><%- icon('share') %> <span>Compartilhar</span></button>
+    <button class="ed-tab" type="button" data-cmd="export"><%- icon('download') %> <span>Exportar</span></button>
+    <div class="ed-title">
+      <button class="icon-btn" type="button" data-cmd="undo" title="Desfazer (Ctrl+Z)"><%- icon('undo') %></button>
+      <button class="icon-btn" type="button" data-cmd="redo" title="Refazer (Ctrl+Y)"><%- icon('redo') %></button>
+      <input id="title" aria-label="Nome da apresentação" maxlength="160">
+      <span class="save-status" id="save-status" role="status">Salvo</span>
+    </div>
+  </header>
+
+  <div class="ribbon" role="toolbar" aria-label="Ferramentas">
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="newSlide" title="Novo slide"><span class="row"><%- icon('layout') %><span class="caret" data-cmd="newSlideMenu"><%- icon('chevronDown') %></span></span>Novo slide</button>
+    </div><div class="rlabel">Slides</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="addText"><%- icon('textBox') %>Caixa de texto</button>
+    </div><div class="rlabel">Inserir</div></div>
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="pickBanco"><%- icon('image') %>Banco de imagens</button>
+    </div><div class="rlabel">Inserir</div></div>
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="pickPortfolio"><%- icon('portfolio') %>Portfólio</button>
+    </div><div class="rlabel">Inserir</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="layoutMenu"><span class="row"><%- icon('layout') %><span class="caret"><%- icon('chevronDown') %></span></span>Layout</button>
+    </div><div class="rlabel">&nbsp;</div></div>
+
+    <div class="rgroup"><div class="rbody fonts">
+      <div class="line"><select class="rsel" id="font-family" aria-label="Fonte">
+        <option>Space Grotesk</option><option>Arial</option><option>Georgia</option><option>Verdana</option><option>Courier New</option>
+      </select>
+      <input class="rsel" id="font-size" type="number" min="6" max="400" list="sizes" aria-label="Tamanho da fonte"></div>
+      <datalist id="sizes"><option>14</option><option>18</option><option>24</option><option>28</option><option>32</option><option>36</option><option>40</option><option>48</option><option>56</option><option>64</option><option>72</option><option>96</option><option>120</option><option>160</option><option>200</option></datalist>
+      <div class="line">
+        <button class="rbtn sm" type="button" data-cmd="bold" title="Negrito (Ctrl+B)"><%- icon('bold') %></button>
+        <button class="rbtn sm" type="button" data-cmd="italic" title="Itálico (Ctrl+I)"><%- icon('italic') %></button>
+        <button class="rbtn sm" type="button" data-cmd="underline" title="Sublinhado (Ctrl+U)"><%- icon('underline') %></button>
+        <button class="rbtn sm" type="button" data-cmd="highlightMenu" title="Realce do texto"><span class="color-a sm">A<i id="hl-bar" style="background:#FFF59D"></i></span><span class="caret"><%- icon('chevronDown') %></span></button>
+        <button class="rbtn sm" type="button" data-cmd="fontGrow" title="Aumentar fonte">A+</button>
+        <button class="rbtn sm" type="button" data-cmd="fontShrink" title="Diminuir fonte">A−</button>
+      </div>
+    </div><div class="rlabel">Fontes</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="colorMenu" title="Cor do texto, da forma ou do fundo do slide"><span class="row"><span class="color-a">A<i id="color-bar"></i></span><span class="caret"><%- icon('chevronDown') %></span></span>Cor</button>
+    </div><div class="rlabel">&nbsp;</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="listMenu"><span class="row"><%- icon('list') %><span class="caret"><%- icon('chevronDown') %></span></span>Listas</button>
+    </div><div class="rlabel">&nbsp;</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn sm" type="button" data-cmd="alignLeft" title="Alinhar à esquerda"><%- icon('alignLeft') %></button>
+      <button class="rbtn sm" type="button" data-cmd="alignCenter" title="Centralizar"><%- icon('alignCenter') %></button>
+      <button class="rbtn sm" type="button" data-cmd="alignRight" title="Alinhar à direita"><%- icon('alignRight') %></button>
+      <button class="rbtn sm" type="button" data-cmd="alignJustify" title="Justificar"><%- icon('alignJustify') %></button>
+      <button class="rbtn sm" type="button" data-cmd="valignMenu" title="Alinhamento vertical e espaçamento"><span class="caret"><%- icon('chevronDown') %></span></button>
+    </div><div class="rlabel">Alinhamento</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="shapesMenu"><span class="row"><%- icon('shapes') %><span class="caret"><%- icon('chevronDown') %></span></span>Formas</button>
+    </div><div class="rlabel">&nbsp;</div></div>
+
+    <div class="rgroup"><div class="rbody">
+      <button class="rbtn" type="button" data-cmd="arrangeMenu"><span class="row"><%- icon('layers') %><span class="caret"><%- icon('chevronDown') %></span></span>Organizar</button>
+    </div><div class="rlabel">&nbsp;</div></div>
+  </div>
+
+  <div class="ed-body">
+    <aside class="slides-panel" id="slides" aria-label="Slides" tabindex="-1"></aside>
+    <section class="stage-wrap">
+      <div class="stage-scroll" id="stage-scroll"><div class="stage" id="stage"></div></div>
+      <div class="sorter" id="sorter" hidden></div>
+      <div class="notes" id="notes" hidden><textarea id="notes-text" placeholder="Anotações do apresentador para este slide (aparecem ao apertar N durante a apresentação)"></textarea></div>
+    </section>
+  </div>
+
+  <footer class="statusbar">
+    <span id="slide-count">Slide 1 de 1</span>
+    <span class="sepv"></span>
+    <label class="lang"><%- icon('globe') %>
+      <select id="lang" aria-label="Idioma da revisão ortográfica">
+        <option value="pt-BR">Português (Brasil)</option><option value="en">English</option><option value="es">Español</option>
+      </select></label>
+    <div class="right">
+      <button class="view" type="button" data-view="notes" title="Anotações"><%- icon('normalView') %></button>
+      <button class="view" type="button" data-view="sorter" title="Classificação de slides"><%- icon('grid') %></button>
+      <button class="view on" type="button" data-view="normal" title="Normal"><%- icon('layout') %></button>
+      <span class="sepv"></span>
+      <select id="zoom-select" aria-label="Zoom"><option value="fit">Ajustar</option><option value="0.25">25%</option><option value="0.5">50%</option><option value="0.75">75%</option><option value="1">100%</option></select>
+      <button class="icon-btn" type="button" data-cmd="zoomOut" aria-label="Diminuir zoom"><%- icon('minus') %></button>
+      <input id="zoom" type="range" min="10" max="150" value="50" aria-label="Zoom">
+      <button class="icon-btn" type="button" data-cmd="zoomIn" aria-label="Aumentar zoom"><%- icon('plus') %></button>
+      <button class="icon-btn" type="button" data-cmd="present" title="Apresentar em tela cheia (F5)"><%- icon('maximize') %></button>
+    </div>
+  </footer>
+</div>
+<input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
+<script type="application/json" id="boot"><%- json(boot) %></script>
+<script type="module" src="/static/js/editor.js?v=<%= version %>"></script>
+</body>
+</html>

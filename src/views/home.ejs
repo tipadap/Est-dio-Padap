@@ -1,0 +1,31 @@
+<%- include('partials/shell-start') %>
+<section class="hero">
+  <svg class="grafismo" viewBox="0 0 700 270" preserveAspectRatio="xMinYMid slice" aria-hidden="true">
+    <path d="M60 300 V150 a120 120 0 0 1 120 -120 h220 v80 a120 120 0 0 1 -120 120 h-90" fill="none" stroke="#1DBD2C" stroke-opacity=".7" stroke-width="2"/>
+    <path d="M110 300 V200 a90 90 0 0 1 90 -90 h120" fill="#1DBD2C" fill-opacity=".12"/>
+  </svg>
+  <div class="hero-photo <%= homeBanner ? '' : 'empty' %>" <% if (homeBanner) { %>style="background-image:url('<%= homeBanner %>')"<% } %>></div>
+  <div class="hero-text">
+    <h1>Olá, <%= currentUser.name.split(' ')[0] %>!</h1>
+    <p>Crie apresentações com a identidade visual da PADAP em poucos minutos.</p>
+  </div>
+</section>
+<div class="home-body">
+  <div style="padding-top:0"><%- include('partials/flash') %></div>
+  <button class="blank-card" type="button" id="novo" data-template="branco">
+    <span class="plus"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" fill="none" stroke-linecap="round"/></svg></span>
+    <span><h3>Apresentação em branco</h3><p>Comece do zero e crie sua apresentação.</p></span>
+    <span class="chev"><%- icon('chevronRight') %></span>
+  </button>
+
+  <h2 class="section">Modelos prontos</h2>
+  <div class="tpl-grid" id="templates"></div>
+
+  <div id="recent-wrap" hidden>
+    <h2 class="section">Continuar de onde parou</h2>
+    <div class="lib-grid" id="recent"></div>
+  </div>
+</div>
+<script type="application/json" id="boot"><%- json(boot) %></script>
+<script type="module" src="/static/js/home.js?v=<%= version %>"></script>
+<%- include('partials/shell-end') %>

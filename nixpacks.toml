@@ -1,0 +1,5 @@
+# Garante as ferramentas para compilar o better-sqlite3 caso não exista
+# binário pré-compilado para a versão de Node usada no build.
+# O "..." mantém os pacotes que o Nixpacks já detecta automaticamente.
+[phases.setup]
+nixPkgs = ["...", "python3", "gcc", "gnumake"]

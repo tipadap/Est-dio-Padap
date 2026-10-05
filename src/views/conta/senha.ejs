@@ -1,0 +1,15 @@
+<%- include('../partials/shell-start') %>
+<div class="page">
+  <div class="page-head"><h1>Trocar senha</h1></div>
+  <%- include('../partials/flash') %>
+  <% if (currentUser.must_change_password) { %><div class="alert alert-info">Este é seu primeiro acesso (ou sua senha foi redefinida). Crie uma senha pessoal para continuar.</div><% } %>
+  <% if (error) { %><div class="alert alert-error" role="alert"><%= error %></div><% } %>
+  <form class="card form-narrow" method="post" action="/conta/senha">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field"><label for="current">Senha atual</label><input class="text-input" id="current" name="current" type="password" autocomplete="current-password" required></div>
+    <div class="field"><label for="next">Nova senha</label><input class="text-input" id="next" name="next" type="password" autocomplete="new-password" minlength="8" required></div>
+    <div class="field"><label for="confirm">Confirmar nova senha</label><input class="text-input" id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="8" required></div>
+    <button class="btn btn-primary" type="submit">Salvar nova senha</button>
+  </form>
+</div>
+<%- include('../partials/shell-end') %>

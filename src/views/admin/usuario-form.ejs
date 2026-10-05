@@ -1,0 +1,14 @@
+<%- include('../partials/shell-start') %>
+<div class="page">
+  <div class="page-head"><h1><%= title %></h1><a class="btn" href="/admin/usuarios">Voltar</a></div>
+  <% if (error) { %><div class="alert alert-error" role="alert"><%= error %></div><% } %>
+  <form class="card form-narrow" method="post" action="/admin/usuarios/<%= user ? user.id : 'novo' %>">
+    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+    <div class="field"><label for="name">Nome</label><input class="text-input" id="name" name="name" value="<%= values.name %>" required></div>
+    <div class="field"><label for="email">E-mail (usado para entrar)</label><input class="text-input" id="email" name="email" type="email" value="<%= values.email %>" required></div>
+    <div class="field"><label class="check"><input type="checkbox" name="is_admin" <%= values.isAdmin ? 'checked' : '' %>> Administrador (gerencia usuários e imagens)</label></div>
+    <% if (!user) { %><p class="muted">Uma senha temporária será gerada e mostrada na próxima tela.</p><% } %>
+    <button class="btn btn-primary" type="submit">Salvar</button>
+  </form>
+</div>
+<%- include('../partials/shell-end') %>

@@ -1,0 +1,23 @@
+<%- include('../partials/shell-start') %>
+<div class="page">
+  <div class="page-head"><h1>Imagens</h1></div>
+  <p class="muted" style="max-width:780px">Envie aqui as fotos aprovadas pela marca. O <strong>Banco de imagens</strong> aparece para todos no editor (botão “Banco de imagens”); o <strong>Portfólio</strong> é para fotos de produtos (botão “Portfólio”). Em cada foto você também pode defini-la como imagem da tela de login, do banner da Página Inicial ou como foto de capa de um modelo pronto.</p>
+  <div class="card" style="margin:20px 0">
+    <form class="upload-bar" id="upload-form">
+      <div class="field"><label for="up-cat">Enviar para</label>
+        <select class="text-input" id="up-cat" name="category"><option value="banco">Banco de imagens</option><option value="portfolio">Portfólio</option></select></div>
+      <div class="field"><label for="up-title">Título (opcional)</label><input class="text-input" id="up-title" name="title" placeholder="Ex.: Lavoura de soja ao pôr do sol"></div>
+      <div class="field"><label for="up-file">Arquivos (JPG, PNG ou WEBP, até 10 MB)</label><input class="text-input" id="up-file" name="image" type="file" accept="image/jpeg,image/png,image/webp" multiple required style="padding-top:9px"></div>
+      <button class="btn btn-primary" type="submit"><%- icon('upload') %> Enviar</button>
+    </form>
+    <div id="upload-status" class="muted"></div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-cat="banco" type="button">Banco de imagens</button>
+    <button class="tab" data-cat="portfolio" type="button">Portfólio</button>
+  </div>
+  <div class="asset-grid" id="assets"></div>
+</div>
+<script type="application/json" id="boot"><%- json(boot) %></script>
+<script type="module" src="/static/js/admin-imagens.js?v=<%= version %>"></script>
+<%- include('../partials/shell-end') %>
