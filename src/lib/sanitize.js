@@ -90,6 +90,7 @@ function cleanElement(el) {
   } else if (el.type === 'image') {
     out.src = typeof el.src === 'string' && SRC.test(el.src) && !el.src.includes('..') ? el.src : '';
     out.mask = pick(el.mask, MASKS, 'none');
+    if (typeof el.maskSrc === 'string' && SRC.test(el.maskSrc) && !el.maskSrc.includes('..')) out.maskSrc = el.maskSrc;
     out.fit = pick(el.fit, ['cover', 'contain'], 'cover');
     out.placeholder = str(el.placeholder, 120);
   } else {

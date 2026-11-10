@@ -28,7 +28,15 @@ function loadImage(src) {
   });
 }
 
-const scaleFor = (w, h) => Math.min(2, 2400 / Math.max(w, h));
+// 1,25x o tamanho no slide de 1920 px já é nítido em projetor/TV Full HD; mais que isso só pesa o arquivo.
+const scaleFor = (w, h) => Math.min(1.25, 2000 / Math.max(w, h));
+
+/** A imagem desenhada tem algum pixel transparente? (decide PNG x JPEG) */
+function hasAlpha(ctx, w, h) {
+  const d = ctx.getImageData(0, 0, w, h).data;
+  for (let i = 3; i < d.length; i += 16) if (d[i] < 250) return true; // amostra 1 a cada 4 px
+  return false;
+}
 
 async function rasterShape(el) {
   // Formas são lisas: 1x basta (arquivo bem menor).
@@ -60,8 +68,16 @@ async function rasterImage(el) {
   if ((el.fit === 'contain') === r > cw / ch) dh = cw / r;
   else dw = ch * r;
   ctx.drawImage(img, (cw - dw) / 2, (ch - dh) / 2, dw, dh);
-  const transparent = clip || /\.(png|webp)$/i.test(el.src) || el.fit === 'contain';
-  return transparent ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.9);
+  if (el.maskSrc) {
+    // recorte livre: mantém só onde a máscara é opaca
+    const mask = await loadImage(el.maskSrc);
+    ctx.globalCompositeOperation = 'destination-in';
+    ctx.drawImage(mask, 0, 0, cw, ch);
+    ctx.globalCompositeOperation = 'source-over';
+  }
+  // PNG só quando há transparência de fato; o resto vai em JPEG (bem menor)
+  const transparent = clip || el.maskSrc || hasAlpha(ctx, cw, ch);
+  return transparent ? c.toDataURL('image/png') : c.toDataURL('image/jpeg', 0.88);
 }
 
 // ---- Texto: HTML do editor -> "runs" do PptxGenJS --------------------------

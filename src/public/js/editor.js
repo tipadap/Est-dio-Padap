@@ -1,7 +1,7 @@
 // Editor de apresentações do Estúdio PADAP.
 import { ICONS } from '/js/icons.js';
 import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api, toast, hasText, shapeSvg } from './render.js';
-import { LAYOUTS, LAYOUT_ORDER } from './templates.js';
+import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER } from './templates.js';
 import { present } from './present.js';
 import { exportPptx } from './pptx.js';
 
@@ -1058,9 +1058,16 @@ function swatches(m, onPick, { none = false, custom = true, current } = {}) {
 
 const layoutCache = {};
 function layoutGrid(m, onPick) {
+  for (const [title, keys] of [['Modelos PADAP', PADAP_LAYOUT_ORDER], ['Layouts básicos', LAYOUT_ORDER]]) {
+    mhead(m, title);
+    layoutSection(m, keys, onPick);
+  }
+}
+
+function layoutSection(m, keys, onPick) {
   const grid = document.createElement('div');
   grid.className = 'layout-grid';
-  for (const key of LAYOUT_ORDER) {
+  for (const key of keys) {
     const b = document.createElement('button');
     b.type = 'button';
     b.innerHTML = '<div class="thumb"></div><span></span>';

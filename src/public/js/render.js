@@ -151,6 +151,12 @@ export function renderElement(el, { editing = false } = {}) {
   } else if (el.type === 'image') {
     const clip = maskPath(el.mask, el.w, el.h);
     if (clip) node.style.clipPath = `path('${clip}')`;
+    // Recorte livre (formato vindo dos modelos do PowerPoint): a foto continua no
+    // formato mesmo quando é trocada.
+    if (el.maskSrc) {
+      const m = `url('${el.maskSrc}')`;
+      Object.assign(node.style, { webkitMaskImage: m, maskImage: m, webkitMaskSize: '100% 100%', maskSize: '100% 100%', webkitMaskRepeat: 'no-repeat', maskRepeat: 'no-repeat' });
+    }
     if (el.src) {
       const img = document.createElement('img');
       img.src = el.src;

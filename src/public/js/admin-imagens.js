@@ -7,7 +7,7 @@ const state = { banco: boot.banco, portfolio: boot.portfolio, settings: boot.set
 const USES = [
   ['login_bg', 'Fundo da tela de login'],
   ['home_banner', 'Banner da Página Inicial'],
-  ...TEMPLATES.map((t) => [`tpl:${t.id}`, `Capa do modelo “${t.name}”`]),
+  ...TEMPLATES.filter((t) => !t.noCoverPhoto).map((t) => [`tpl:${t.id}`, `Capa do modelo “${t.name}”`]),
 ];
 const useLabel = Object.fromEntries(USES);
 

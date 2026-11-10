@@ -114,6 +114,8 @@ test('sanitização descarta campos e imagens externas', () => {
           { type: 'image', src: 'https://evil.example/x.png', x: 'a', y: 1e9, w: 10, h: 10, foo: 1 },
           { type: 'image', src: '/uploads/../../etc/passwd.png', x: 0, y: 0, w: 10, h: 10 },
           { type: 'image', src: '/uploads/abc123.jpg', x: 0, y: 0, w: 10, h: 10, mask: 'leaf' },
+          { type: 'image', src: '/static/img/modelos-padap/s1-1-foto.webp', maskSrc: '/static/img/modelos-padap/s1-1-recorte.png', x: 0, y: 0, w: 10, h: 10 },
+          { type: 'image', src: '/uploads/a.jpg', maskSrc: 'https://evil.example/m.png', x: 0, y: 0, w: 10, h: 10 },
           { type: 'script', x: 0 },
         ],
       },
@@ -121,7 +123,9 @@ test('sanitização descarta campos e imagens externas', () => {
   });
   const els = d.slides[0].elements;
   assert.strictEqual(d.slides[0].bg, '#FFFFFF');
-  assert.strictEqual(els.length, 3);
+  assert.strictEqual(els.length, 5);
+  assert.strictEqual(els[3].maskSrc, '/static/img/modelos-padap/s1-1-recorte.png');
+  assert.strictEqual(els[4].maskSrc, undefined);
   assert.strictEqual(els[0].src, '');
   assert.strictEqual(els[0].x, 0);
   assert.strictEqual(els[0].y, 6000);

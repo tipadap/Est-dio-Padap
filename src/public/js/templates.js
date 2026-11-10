@@ -1,5 +1,6 @@
 // Layouts de slide e modelos prontos, com a identidade visual PADAP (Brandbook).
 import { BRAND, uid } from './render.js';
+import { PADAP_SLIDES } from './modelos-padap.js';
 
 const LOGO_RATIO = 2560 / 882;
 
@@ -186,6 +187,18 @@ export const LAYOUTS = {
   },
 };
 
+/** Cópia de um slide-modelo com ids novos (cada uso vira um slide independente). */
+function cloneSlide(slide) {
+  const s = JSON.parse(JSON.stringify(slide));
+  s.id = uid('s');
+  s.elements.forEach((e) => (e.id = uid()));
+  return s;
+}
+
+// Os 22 modelos de slide da PADAP (Modelos_Slides_PADAP.pptx), no menu Novo slide / Layout.
+for (const m of PADAP_SLIDES) LAYOUTS[m.key] = { name: m.name, group: 'padap', build: () => cloneSlide(m.slide) };
+export const PADAP_LAYOUT_ORDER = PADAP_SLIDES.map((m) => m.key);
+
 export const LAYOUT_ORDER = ['capa', 'capaSimples', 'secao', 'conteudo', 'duasColunas', 'imagemTexto', 'numeros', 'citacao', 'encerramento', 'titulo', 'branco'];
 
 // ---- Modelos prontos ----------------------------------------------------
@@ -213,6 +226,13 @@ export function templatePhotos(id, overrides = {}) {
 const L = (layout, c) => LAYOUTS[layout].build(c);
 
 export const TEMPLATES = [
+  {
+    id: 'padap2026',
+    name: 'Apresentação PADAP completa',
+    tagline: 'Os 22 modelos de slide da PADAP.',
+    noCoverPhoto: true,
+    build: () => PADAP_SLIDES.map((m) => cloneSlide(m.slide)),
+  },
   {
     id: 'institucional',
     name: 'Apresentação Institucional',
