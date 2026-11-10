@@ -17,6 +17,27 @@ Mesmo processo do Portal do Produtor.
 O `railway.json`, `nixpacks.toml` e `Procfile` já estão prontos. Com `NODE_ENV=production`
 o app liga `trust proxy` sozinho (necessário para o cookie seguro atrás do HTTPS do Railway).
 
+O deploy usa a verificação de saúde `/health` (no `railway.json`): a versão nova só substitui a
+antiga depois de responder. Se ela não subir (erro no código, banco inacessível), a antiga continua no ar.
+
+## Backup e restauração
+
+Três camadas, da mais forte para a mais simples:
+
+1. **Backups do Railway** (recomendado): no serviço, clique no volume `/data` → aba **Backups** →
+   ative a agenda (diária/semanal). Para restaurar: na mesma aba, **Restore** na cópia desejada
+   e faça Deploy. Restaura banco e imagens de uma vez.
+2. **Download pelo admin**: **Admin → Backup → Baixar backup completo** gera um `.zip` com
+   `estudio.db` (usuários, apresentações, histórico, preços, configurações) e a pasta `uploads/`
+   (imagens enviadas). Guarde fora do Railway. As fotos que vêm com o sistema (Banco PADAP,
+   Portfólio, modelos) estão no git e não entram no zip.
+3. **Cópia diária automática** em `/data/backups` (7 mais recentes), feita pelo próprio sistema.
+   Protege contra erro humano/arquivo corrompido, mas fica no mesmo volume.
+
+**Restaurar a partir do `.zip`** exige colocar os arquivos dentro do volume (o Railway não tem
+envio de arquivos pelo painel). Para testar ou conferir um backup localmente: extraia o zip, aponte
+`DATA_DIR` para a pasta extraída (com `estudio.db` e `uploads/`) e rode `npm run dev`.
+
 ## Perdeu o acesso do administrador?
 
 1. Em **Variables**, confira `ADMIN_EMAIL` e defina uma `ADMIN_PASSWORD` nova (mínimo 8 caracteres).

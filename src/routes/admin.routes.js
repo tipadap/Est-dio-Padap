@@ -6,6 +6,7 @@ const assets = require('../lib/assets');
 const portfolio = require('../lib/portfolio');
 const banco = require('../lib/banco');
 const settings = require('../lib/settings');
+const backup = require('../lib/backup');
 const password = require('../lib/password');
 const csrf = require('../middleware/csrf');
 const { requireAuth, requireAdmin } = require('../middleware/auth');
@@ -132,6 +133,29 @@ router.get('/imagens', (req, res) => {
       templateIds: settings.TEMPLATE_IDS,
     },
   });
+});
+
+// ---- Backup -------------------------------------------------------------------
+
+router.get('/backup', (req, res) => {
+  res.render('admin/backup', { title: 'Backup', active: 'backup', copias: backup.list() });
+});
+
+// Download do backup completo (banco + imagens enviadas) em .zip.
+router.get('/backup/download', async (req, res) => {
+  res.set({
+    'Content-Type': 'application/zip',
+    'Content-Disposition': `attachment; filename="estudio-padap-backup-${backup.stamp()}.zip"`,
+    'Cache-Control': 'no-store',
+  });
+  try {
+    await backup.fullZip(res);
+    res.end();
+  } catch (e) {
+    console.error('Backup (download) falhou:', e.message);
+    if (!res.headersSent) res.status(500).end();
+    else res.destroy();
+  }
 });
 
 module.exports = router;

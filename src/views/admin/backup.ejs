@@ -1,0 +1,45 @@
+<%- include('../partials/shell-start') %>
+<div class="page">
+  <div class="page-head">
+    <h1>Backup</h1>
+    <a class="btn btn-primary" href="/admin/backup/download"><%- icon('download') %> Baixar backup completo</a>
+  </div>
+  <p class="muted" style="max-width:820px;margin-top:-8px">
+    O backup completo é um arquivo <strong>.zip</strong> com o banco de dados (usuários, apresentações, histórico,
+    preços e configurações) e todas as imagens enviadas. Baixe de tempos em tempos e guarde fora do Railway
+    (por exemplo, numa pasta da empresa no OneDrive). As fotos do Banco PADAP, do Portfólio e dos modelos
+    já vêm com o sistema e não entram no arquivo.
+  </p>
+
+  <h2 class="section">Cópias automáticas</h2>
+  <p class="muted" style="max-width:820px">
+    Todo dia o sistema guarda uma cópia do banco de dados no próprio servidor (as 7 mais recentes).
+    Elas protegem contra erro humano ou arquivo corrompido, mas ficam no mesmo volume do sistema —
+    por isso o download acima e os Backups do Railway continuam importantes.
+  </p>
+  <div class="card" style="padding:0;overflow:auto;max-width:620px">
+    <table class="table">
+      <thead><tr><th>Data</th><th>Arquivo</th><th style="text-align:right">Tamanho</th></tr></thead>
+      <tbody>
+        <% if (!copias.length) { %>
+          <tr><td colspan="3" class="muted">A primeira cópia é feita alguns minutos depois que o sistema inicia.</td></tr>
+        <% } %>
+        <% copias.forEach(function (c) { %>
+          <tr>
+            <td><%= c.date.split('-').reverse().join('/') %></td>
+            <td><code><%= c.file %></code></td>
+            <td style="text-align:right"><%= (c.size / 1024 / 1024).toLocaleString('pt-BR', { maximumFractionDigits: 1 }) %> MB</td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="section">Como restaurar</h2>
+  <p class="muted" style="max-width:820px">
+    O caminho mais simples são os <strong>Backups do Railway</strong> (no volume <code>/data</code>, aba Backups →
+    Restore), que precisam estar ativados. Restaurar a partir do .zip exige colocar os arquivos dentro do volume;
+    o passo a passo está em <code>deploy/RAILWAY.md</code> (seção “Backup e restauração”).
+  </p>
+</div>
+<%- include('../partials/shell-end') %>
