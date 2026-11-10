@@ -116,6 +116,10 @@ router.post('/usuarios/:id/senha', csrf.verify, async (req, res, next) => {
 
 // ---- Imagens (Banco, Portfólio e imagens do sistema) -----------------------
 
+router.get('/precos', (req, res) => {
+  res.render('admin/precos', { title: 'Preços', active: 'precos' });
+});
+
 router.get('/imagens', (req, res) => {
   res.render('admin/imagens', {
     title: 'Imagens',

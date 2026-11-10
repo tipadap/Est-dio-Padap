@@ -953,6 +953,50 @@ function addChart(chartType) {
   openChartEditor(el);
 }
 
+// ---- Preços e indicadores (Admin > Preços) -----------------------------------
+
+const brl = (v) => (v === null || v === undefined ? '' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+const dataBR = (iso) => (iso ? iso.split('-').reverse().join('/') : '');
+
+async function priceRows() {
+  const d = await api('GET', '/api/precos');
+  if (!d.rows.length) {
+    toast('A tabela de preços ainda está vazia. Um administrador pode preenchê-la em Preços.', 'error');
+    return null;
+  }
+  return [['Produto', 'Marca', 'Embalagem', 'Preço (R$)', 'Prazo'], ...d.rows.map((r) => [r.produto, r.marca, r.embalagem, brl(r.preco), r.prazo])];
+}
+
+async function addPriceTable() {
+  const rows = await priceRows();
+  if (!rows) return;
+  const h = Math.min(760, 64 * rows.length);
+  addElement({
+    id: uid(), type: 'table', x: 160, y: 240, w: 1600, h,
+    rows, colWidths: [0.3, 0.18, 0.2, 0.18, 0.14], align: ['left', 'left', 'left', 'right', 'center'], header: true, fontSize: 26,
+  });
+  toast(`Tabela com ${rows.length - 1} produto(s) da tabela de preços.`);
+}
+
+async function addMarketIndicators() {
+  const d = await api('GET', '/api/precos');
+  const m = d.market || {};
+  const linhas = [];
+  if (d.ptax) linhas.push(`<b>Dólar (PTAX):</b> R$ ${d.ptax.valor.toLocaleString('pt-BR', { minimumFractionDigits: 4 })} <span style="color:#5A6E76">(${dataBR(d.ptax.data)})</span>`);
+  if (m.ureia !== null && m.ureia !== undefined) linhas.push(`<b>Ureia:</b> US$ ${brl(m.ureia)}/t`);
+  if (m.map !== null && m.map !== undefined) linhas.push(`<b>MAP:</b> US$ ${brl(m.map)}/t`);
+  if (m.kcl !== null && m.kcl !== undefined) linhas.push(`<b>KCl:</b> US$ ${brl(m.kcl)}/t`);
+  if (!linhas.length) return toast('Sem indicadores cadastrados ainda (Admin > Preços).', 'error');
+  const fonte = [m.fonte, m.data ? `ref. ${dataBR(m.data)}` : ''].filter(Boolean).join(' · ');
+  const dark = isDarkBg();
+  addElement({
+    id: uid(), type: 'text', x: 160, y: 300, w: 900, h: 60 * linhas.length + 60,
+    html: linhas.map((l) => `<div>${l}</div>`).join('') + (fonte ? `<div style="font-size:20px;color:${dark ? '#9BB7BD' : '#5A6E76'}">Fonte: ${fonte.replace(/</g, '&lt;')}</div>` : ''),
+    placeholder: 'Indicadores', style: { fontFamily: 'Space Grotesk', fontSize: 36, color: dark ? '#FFFFFF' : BRAND.teal, align: 'left', valign: 'top', lineHeight: 1.5, bold: false },
+  });
+  return undefined;
+}
+
 function addTable() {
   addElement({
     id: uid(), type: 'table', x: 160, y: 300, w: 1600, h: 420,
@@ -1078,6 +1122,7 @@ function openTableEditor(el) {
     <div class="data-actions">
       <button class="btn btn-sm" type="button" data-a="addRow">+ Linha</button>
       <button class="btn btn-sm" type="button" data-a="addCol">+ Coluna</button>
+      <button class="btn btn-sm" type="button" data-a="prices">Preencher com a tabela de preços</button>
       <span style="flex:1"></span>
       <button class="btn btn-sm" type="button" data-a="cancel">Cancelar</button>
       <button class="btn btn-sm btn-primary" type="button" data-a="ok">Aplicar</button>
@@ -1145,6 +1190,14 @@ function openTableEditor(el) {
     if (a === 'addRow') {
       work.rows.push(Array(cols()).fill(''));
       draw();
+    } else if (a === 'prices') {
+      priceRows().then((rows) => {
+        if (!rows) return;
+        work.rows = rows;
+        work.colWidths = [0.3, 0.18, 0.2, 0.18, 0.14];
+        work.align = ['left', 'left', 'left', 'right', 'center'];
+        draw();
+      });
     } else if (a === 'addCol') {
       work.rows.forEach((r) => r.push(''));
       if (work.colWidths) {
@@ -1925,6 +1978,8 @@ const COMMANDS = {
       mi(m, 'Gráfico de barras', () => addChart('bar'), { icon: 'grid' });
       mi(m, 'Gráfico de linhas', () => addChart('line'), { icon: 'normalView' });
       mi(m, 'Tabela', addTable, { icon: 'layout' });
+      mi(m, 'Tabela de cotação (preços atuais)', addPriceTable, { icon: 'grid' });
+      mi(m, 'Indicadores de mercado (dólar, ureia, MAP, KCl)', addMarketIndicators, { icon: 'globe' });
       mhead(m, 'Inserir forma');
       const grid = document.createElement('div');
       grid.className = 'shape-grid';

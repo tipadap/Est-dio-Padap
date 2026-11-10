@@ -1,0 +1,33 @@
+<%- include('../partials/shell-start') %>
+<div class="page">
+  <div class="page-head">
+    <h1>Preços</h1>
+    <button class="btn btn-primary" type="button" id="salvar"><%- icon('save') %> Salvar</button>
+  </div>
+  <p class="muted" style="max-width:820px;margin-top:-8px">Atualize aqui a tabela de preços e os indicadores de mercado. No editor, em <strong>Formas → Dados</strong>, “Tabela de cotação” e “Indicadores de mercado” já entram preenchidos com estes valores. O dólar PTAX é buscado automaticamente no Banco Central.</p>
+  <div id="atualizado" class="muted" style="font-size:13px;margin-bottom:16px"></div>
+
+  <h2 class="section" style="margin-top:8px">Indicadores de mercado</h2>
+  <div class="card mercado">
+    <div class="field"><label>Dólar PTAX (automático)</label><div class="ptax" id="ptax">Buscando no Banco Central…</div></div>
+    <div class="field"><label for="ureia">Ureia (US$/t)</label><input class="text-input" id="ureia" inputmode="decimal" placeholder="ex.: 450"></div>
+    <div class="field"><label for="map">MAP (US$/t)</label><input class="text-input" id="map" inputmode="decimal" placeholder="ex.: 730"></div>
+    <div class="field"><label for="kcl">KCl (US$/t)</label><input class="text-input" id="kcl" inputmode="decimal" placeholder="ex.: 330"></div>
+    <div class="field"><label for="data">Data de referência</label><input class="text-input" id="data" type="date"></div>
+    <div class="field"><label for="fonte">Fonte</label><input class="text-input" id="fonte" placeholder="ex.: Relatório de Mercado PADAP"></div>
+  </div>
+
+  <div class="page-head" style="margin:36px 0 12px">
+    <h2 class="section" style="margin:0">Tabela de preços</h2>
+    <button class="btn btn-sm" type="button" id="add">+ Produto</button>
+  </div>
+  <div class="card" style="padding:0;overflow:auto">
+    <table class="table precos">
+      <thead><tr><th style="width:30%">Produto</th><th>Marca</th><th>Embalagem</th><th>Preço (R$)</th><th>Prazo</th><th></th></tr></thead>
+      <tbody id="linhas"></tbody>
+    </table>
+  </div>
+  <datalist id="produtos"></datalist>
+</div>
+<script type="module" src="/app/<%= build %>/admin-precos.js"></script>
+<%- include('../partials/shell-end') %>

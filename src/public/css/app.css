@@ -315,3 +315,11 @@ h2.section { font-size: 20px; font-weight: 600; margin: 40px 0 16px; color: var(
 /* ---------- Páginas de erro ---------- */
 .center-page { min-height: 100vh; display: grid; place-items: center; padding: 24px; }
 .center-page .card { max-width: 520px; text-align: center; }
+
+/* Admin > Preços */
+.mercado { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 4px 16px; }
+.mercado .field { margin-bottom: 8px; }
+.mercado .ptax { min-height: 44px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 15px; }
+.table.precos { box-shadow: none; }
+.table.precos td { padding: 6px 8px; }
+.table.precos .text-input { height: 38px; }

@@ -192,6 +192,21 @@ test('sanitização descarta campos e imagens externas', () => {
   assert.throws(() => cleanPresentation({ slides: [] }));
 });
 
+test('preços: só admin grava, todos leem, valores validados', async () => {
+  const body = { rows: [{ produto: 'YaraMila Complex', marca: 'Yara', embalagem: 'Saco 50 kg', preco: '4.250,50', prazo: '30 dias' }, { produto: '', preco: '1' }], market: { ureia: '450', map: 'x', kcl: '332,5', data: '2026-11-10', fonte: '<b>Relatório</b>' } };
+  assert.strictEqual((await ana.agent.put('/api/precos').set('x-csrf-token', ana.token).send(body)).status, 403);
+  const r = await admin.agent.put('/api/precos').set('x-csrf-token', admin.token).send(body);
+  assert.strictEqual(r.status, 200);
+  const g = (await ana.agent.get('/api/precos')).body;
+  assert.strictEqual(g.rows.length, 1);
+  assert.strictEqual(g.rows[0].preco, 4250.5);
+  assert.deepStrictEqual([g.market.ureia, g.market.map, g.market.kcl], [450, null, 332.5]);
+  assert.strictEqual(g.market.data, '2026-11-10');
+  assert.strictEqual(g.ptax, null);
+  assert.strictEqual((await ana.agent.get('/admin/precos')).status, 302);
+  assert.strictEqual((await admin.agent.get('/admin/precos')).status, 200);
+});
+
 test('gráfico e tabela: dados validados', () => {
   const d = cleanPresentation({
     slides: [{

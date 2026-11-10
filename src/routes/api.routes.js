@@ -4,6 +4,8 @@ const express = require('express');
 const config = require('../config');
 const presentations = require('../lib/presentations');
 const versions = require('../lib/versions');
+const prices = require('../lib/prices');
+const { getPtax } = require('../lib/ptax');
 const assets = require('../lib/assets');
 const portfolio = require('../lib/portfolio');
 const settings = require('../lib/settings');
@@ -178,6 +180,15 @@ router.delete('/assets/:id', csrf.verify, (req, res) => {
   settings.clearValue(asset.url);
   assets.remove(asset);
   return res.json({ ok: true });
+});
+
+// Preços e indicadores de mercado (qualquer usuário lê; só admin grava)
+router.get('/precos', async (req, res) => {
+  res.json({ ...prices.get(), ptax: await getPtax(), atualizado: prices.updatedInfo() });
+});
+
+router.put('/precos', requireAdmin, csrf.verify, (req, res) => {
+  res.json(prices.save(req.body || {}, req.user.name || req.user.email));
 });
 
 // Preferências (admin): imagem do login, banner da página inicial, foto de cada modelo.

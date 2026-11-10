@@ -12,6 +12,7 @@
       <% if (currentUser && currentUser.is_admin) { %>
         <div class="sep"></div>
         <a class="nav-item <%= active === 'imagens' ? 'active' : '' %>" href="/admin/imagens"><%- icon('image') %> Imagens</a>
+        <a class="nav-item <%= active === 'precos' ? 'active' : '' %>" href="/admin/precos"><%- icon('grid') %> Preços</a>
         <a class="nav-item <%= active === 'usuarios' ? 'active' : '' %>" href="/admin/usuarios"><%- icon('users') %> Usuários</a>
       <% } %>
       <div class="sep"></div>
