@@ -1,7 +1,7 @@
 // Editor de apresentações do Estúdio PADAP.
 import { ICONS } from '/js/icons.js';
 import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api, toast, hasText, shapeSvg, fmtDate } from './render.js';
-import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER, buildPresentation } from './templates.js';
+import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER, FUNDOS_LAYOUT_ORDER, buildPresentation } from './templates.js';
 import { present } from './present.js';
 import { exportPptx } from './pptx.js';
 import { exportPdf } from './pdf.js';
@@ -1434,6 +1434,7 @@ function moveSlide(from, to) {
 
 function applyLayout(layout) {
   const s = curSlide();
+  if (LAYOUTS[layout].group === 'fundo') return applyBackground(layout);
   const userContent = s.elements.some((e) => !e.locked && ((e.type === 'text' && hasText(e.html)) || (e.type === 'image' && e.src && !e.src.startsWith('/static/'))));
   if (userContent && !confirm(`Aplicar o layout “${LAYOUTS[layout].name}”? O conteúdo atual deste slide será substituído.`)) return;
   exitEdit();
@@ -1442,6 +1443,39 @@ function applyLayout(layout) {
   fresh.notes = s.notes;
   slides()[S.cur] = fresh;
   S.sel = null;
+  renderStage();
+  commit();
+}
+
+/** Troca só o fundo (cor + decorações bloqueadas), mantendo o conteúdo do slide por cima. */
+function applyBackground(layout) {
+  const s = curSlide();
+  exitEdit();
+  const fresh = LAYOUTS[layout].build({});
+  const luma = (hex) => {
+    const c = String(hex || '').replace('#', '');
+    if (c.length !== 6) return 1;
+    return (0.299 * parseInt(c.slice(0, 2), 16) + 0.587 * parseInt(c.slice(2, 4), 16) + 0.114 * parseInt(c.slice(4, 6), 16)) / 255;
+  };
+  const wasDark = luma(s.bg || '#FFFFFF') < 0.5;
+  const nowDark = luma(fresh.bg) < 0.5;
+  // Conteúdo do usuário fica; o logo antigo sai (o fundo já traz o dele, na versão certa).
+  const keep = s.elements.filter((el) => !el.locked && !(el.type === 'image' && String(el.src).startsWith('/static/img/padap-logo-')));
+  if (wasDark !== nowDark) {
+    // Mantém o texto legível: escuro → branco no fundo escuro, claro → verde-petróleo no fundo claro.
+    const fix = (c) => (nowDark && luma(c) < 0.5 ? '#FFFFFF' : !nowDark && luma(c) > 0.8 ? BRAND.teal : c);
+    for (const el of keep) {
+      if (el.type === 'text' && el.style) el.style.color = fix(el.style.color);
+      if ((el.type === 'chart' || el.type === 'table') && el.textColor) el.textColor = fix(el.textColor);
+    }
+  }
+  // O logo do fundo sai se cair em cima de algum conteúdo (ex.: título no canto superior).
+  const hits = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+  const decor = fresh.elements.filter((el) => !(el.type === 'image' && keep.some((k) => hits(el, k))));
+  s.bg = fresh.bg;
+  s.elements = [...decor, ...keep];
+  S.sel = null;
+  S.group = [];
   renderStage();
   commit();
 }
@@ -1584,7 +1618,7 @@ function swatches(m, onPick, { none = false, custom = true, current } = {}) {
 
 const layoutCache = {};
 function layoutGrid(m, onPick) {
-  for (const [title, keys] of [['Modelos PADAP', PADAP_LAYOUT_ORDER], ['Layouts básicos', LAYOUT_ORDER]]) {
+  for (const [title, keys] of [['Modelos PADAP', PADAP_LAYOUT_ORDER], ['Fundos PADAP', FUNDOS_LAYOUT_ORDER], ['Layouts básicos', LAYOUT_ORDER]]) {
     mhead(m, title);
     layoutSection(m, keys, onPick);
   }

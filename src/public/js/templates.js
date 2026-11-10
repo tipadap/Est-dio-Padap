@@ -1,6 +1,7 @@
 // Layouts de slide e modelos prontos, com a identidade visual PADAP (Brandbook).
 import { BRAND, uid } from './render.js';
 import { PADAP_SLIDES } from './modelos-padap.js';
+import { PADAP_FUNDOS } from './fundos-padap.js';
 
 const LOGO_RATIO = 2560 / 882;
 
@@ -198,6 +199,10 @@ function cloneSlide(slide) {
 // Os 22 modelos de slide da PADAP (Modelos_Slides_PADAP.pptx), no menu Novo slide / Layout.
 for (const m of PADAP_SLIDES) LAYOUTS[m.key] = { name: m.name, group: 'padap', build: () => cloneSlide(m.slide) };
 export const PADAP_LAYOUT_ORDER = PADAP_SLIDES.map((m) => m.key);
+
+// 30 fundos (só decoração) com base no Brandbook: aplicados sem apagar o conteúdo do slide.
+for (const f of PADAP_FUNDOS) LAYOUTS[f.key] = { name: f.name, group: 'fundo', build: f.build };
+export const FUNDOS_LAYOUT_ORDER = PADAP_FUNDOS.map((f) => f.key);
 
 export const LAYOUT_ORDER = ['capa', 'capaSimples', 'secao', 'conteudo', 'duasColunas', 'imagemTexto', 'numeros', 'citacao', 'encerramento', 'titulo', 'branco'];
 

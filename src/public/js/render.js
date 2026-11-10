@@ -94,7 +94,10 @@ export function shapeSvg(el, { standalone = false } = {}) {
   const { w, h } = el;
   const sw = el.strokeWidth || 0;
   const outline = el.shape === 'line' || el.shape === 'symbolOutline';
-  const fill = outline || el.fill === 'none' ? 'none' : el.fill2 ? 'url(#g)' : el.fill;
+  // id do degradê derivado das cores/ângulo: vários SVGs na mesma página (miniaturas, palco)
+  // não podem compartilhar um id fixo, senão todos herdam o degradê do primeiro.
+  const gid = el.fill2 ? `g${`${el.fill}${el.fill2}${el.gradAngle ?? 90}`.replace(/[^0-9a-z]/gi, '')}` : '';
+  const fill = outline || el.fill === 'none' ? 'none' : el.fill2 ? `url(#${gid})` : el.fill;
   const stroke = el.shape === 'line' ? el.stroke !== 'none' ? el.stroke : el.fill : el.shape === 'symbolOutline' && el.stroke === 'none' ? el.fill : el.stroke;
   const strokeW = el.shape === 'line' || el.shape === 'symbolOutline' ? Math.max(sw, 4) : sw;
   let defs = '';
@@ -102,7 +105,7 @@ export function shapeSvg(el, { standalone = false } = {}) {
     const a = ((el.gradAngle ?? 90) * Math.PI) / 180;
     const x = Math.cos(a) / 2;
     const y = Math.sin(a) / 2;
-    defs = `<defs><linearGradient id="g" x1="${0.5 - x}" y1="${0.5 - y}" x2="${0.5 + x}" y2="${0.5 + y}"><stop offset="0" stop-color="${el.fill}"/><stop offset="1" stop-color="${el.fill2}"/></linearGradient></defs>`;
+    defs = `<defs><linearGradient id="${gid}"x1="${0.5 - x}" y1="${0.5 - y}" x2="${0.5 + x}" y2="${0.5 + y}"><stop offset="0" stop-color="${el.fill}"/><stop offset="1" stop-color="${el.fill2}"/></linearGradient></defs>`;
   }
   // O traço é desenhado "para dentro" da caixa (inset de meia espessura).
   const pad = strokeW / 2;
