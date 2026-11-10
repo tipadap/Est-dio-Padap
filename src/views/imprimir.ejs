@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title><%= title %></title>
   <link rel="icon" href="/static/img/favicon.png">
-  <link rel="stylesheet" href="/static/css/app.css?v=<%= version %>">
-  <link rel="stylesheet" href="/static/css/slide.css?v=<%= version %>">
+  <link rel="stylesheet" href="/static/css/app.css?v=<%= build %>">
+  <link rel="stylesheet" href="/static/css/slide.css?v=<%= build %>">
   <style>
     @page { size: 13.333in 7.5in; margin: 0; }
     body { background: #E9EEF0; }
@@ -31,6 +31,6 @@
   </div>
   <div class="pages" id="pages"></div>
   <script type="application/json" id="boot"><%- json(boot) %></script>
-  <script type="module" src="/static/js/imprimir.js?v=<%= version %>"></script>
+  <script type="module" src="/static/js/imprimir.js?v=<%= build %>"></script>
 </body>
 </html>

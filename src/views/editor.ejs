@@ -1,5 +1,5 @@
 <%- include('partials/head', { extraCss: 'editor' }) %>
-<link rel="stylesheet" href="/static/css/present.css?v=<%= version %>">
+<link rel="stylesheet" href="/static/css/present.css?v=<%= build %>">
 <body>
 <div class="ed">
   <header class="ed-top">
@@ -112,6 +112,6 @@
 </div>
 <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
 <script type="application/json" id="boot"><%- json(boot) %></script>
-<script type="module" src="/static/js/editor.js?v=<%= version %>"></script>
+<script type="module" src="/static/js/editor.js?v=<%= build %>"></script>
 </body>
 </html>

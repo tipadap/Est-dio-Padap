@@ -65,6 +65,16 @@ test('páginas exigem login', async () => {
   assert.strictEqual(api.status, 401);
 });
 
+test('JS/CSS sempre conferidos com o servidor (atualizações aparecem na hora)', async () => {
+  for (const f of ['/static/js/editor.js', '/static/js/templates.js', '/static/css/app.css']) {
+    const r = await request(app).get(f);
+    assert.strictEqual(r.status, 200, f);
+    assert.strictEqual(r.headers['cache-control'], 'no-cache', f);
+  }
+  const page = await request(app).get('/login');
+  assert.ok(page.text.includes('app.css?v='), 'CSS com ?v= do deploy');
+});
+
 test('senha errada não entra', async () => {
   const agent = request.agent(app);
   const page = await agent.get('/login');

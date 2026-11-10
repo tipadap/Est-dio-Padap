@@ -44,7 +44,16 @@ app.use(
 
 app.use(express.urlencoded({ extended: true }));
 const cache = { maxAge: config.isProd ? '7d' : 0 };
-app.use('/static', express.static(config.paths.public, cache));
+// JS e CSS: o navegador sempre confere com o servidor (ETag/304, rápido), para que cada
+// atualização apareça na hora — os módulos importados (ex.: templates.js) não levam ?v=.
+// Imagens e fontes continuam com cache longo.
+const staticOpts = {
+  ...cache,
+  setHeaders: (res, filePath) => {
+    if (/\.(js|mjs|css)$/i.test(filePath)) res.setHeader('Cache-Control', 'no-cache');
+  },
+};
+app.use('/static', express.static(config.paths.public, staticOpts));
 app.use('/vendor', express.static(config.paths.vendor, cache));
 app.use('/uploads', express.static(config.paths.uploads, cache));
 
@@ -72,6 +81,7 @@ app.use((req, res, next) => {
   res.locals.title = 'Estúdio PADAP';
   res.locals.active = '';
   res.locals.version = config.version;
+  res.locals.build = config.build;
   res.locals.icon = icon;
   res.locals.supportUrl = config.supportUrl;
   res.locals.flashSuccess = req.flash('success');

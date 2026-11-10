@@ -28,6 +28,8 @@ const trustProxy = OFF.includes(process.env.TRUST_PROXY)
 const config = {
   root: ROOT,
   version: require('../package.json').version,
+  // Muda a cada deploy (Railway informa o commit): vai no ?v= dos arquivos para furar o cache.
+  build: (process.env.RAILWAY_GIT_COMMIT_SHA || '').slice(0, 7) || String(Date.now()),
   port: Number(process.env.PORT) || 3000,
   env: process.env.NODE_ENV || 'development',
   isProd: IS_PROD,
