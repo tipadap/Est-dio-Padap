@@ -1,11 +1,25 @@
 <%- include('partials/head') %>
 <body>
 <div class="center-page">
-  <div class="card">
-    <img src="/static/img/padap-logo-verde.png" alt="PADAP" style="width:200px">
+  <div class="card" style="text-align:left;max-width:460px">
+    <img src="/static/img/padap-logo-verde.png" alt="PADAP" style="width:170px">
     <h1 style="font-size:24px;color:var(--teal-900)">Esqueceu sua senha?</h1>
-    <p class="muted">Peça ao administrador do Estúdio PADAP para redefinir sua senha. Você receberá uma senha temporária e vai criar uma nova no próximo acesso.</p>
-    <p><a class="btn" href="<%= supportUrl %>"><%- icon('headset') %> Falar com o suporte</a> <a class="btn btn-primary" href="/login">Voltar ao login</a></p>
+    <% if (!mailOn) { %>
+      <p class="muted">Peça ao administrador do Estúdio PADAP para redefinir sua senha. Você receberá uma senha temporária e vai criar uma nova no próximo acesso.</p>
+      <p><a class="btn" href="<%= supportUrl %>"><%- icon('headset') %> Falar com o suporte</a> <a class="btn btn-primary" href="/login">Voltar ao login</a></p>
+    <% } else if (sent) { %>
+      <div class="alert alert-success">Se este e-mail estiver cadastrado, enviamos um link para criar uma nova senha. Ele vale por 1 hora — confira também a caixa de spam.</div>
+      <p><a class="btn btn-primary" href="/login">Voltar ao login</a></p>
+    <% } else { %>
+      <p class="muted">Informe o e-mail que você usa para entrar. Vamos enviar um link para criar uma nova senha.</p>
+      <% if (error) { %><div class="alert alert-error" role="alert"><%= error %></div><% } %>
+      <form method="post" action="/esqueci-senha">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field"><label for="email">E-mail</label><input class="text-input" id="email" name="email" type="email" autocomplete="username" required autofocus></div>
+        <button class="btn btn-primary btn-block" type="submit">Enviar link</button>
+      </form>
+      <p style="margin-top:16px"><a href="/login">Voltar ao login</a></p>
+    <% } %>
   </div>
 </div>
 </body>

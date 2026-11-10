@@ -27,6 +27,7 @@
     "helmet": "^8.0.0",
     "jspdf": "^3.0.4",
     "multer": "^2.0.1",
+    "nodemailer": "^7.0.13",
     "pptxgenjs": "^4.0.1",
     "sanitize-html": "^2.13.0"
   },

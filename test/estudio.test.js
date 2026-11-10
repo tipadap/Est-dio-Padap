@@ -342,6 +342,45 @@ test('ADMIN_RESET recupera o acesso do administrador pelas variáveis de ambient
   }
 });
 
+test('recuperação de senha por e-mail (link de uso único, 1 h)', async () => {
+  const mail = require('../src/lib/mail');
+  const env = { ...process.env };
+  try {
+    // sem SMTP: tela antiga ("peça ao administrador"), POST não envia nada
+    delete process.env.SMTP_HOST;
+    let page = await request(app).get('/esqueci-senha');
+    assert.match(page.text, /Peça ao administrador/);
+    Object.assign(process.env, { SMTP_HOST: 'smtp.teste', SMTP_USER: 'u', SMTP_PASS: 'p', APP_URL: 'https://estudio.teste' });
+    users.create({ email: 'dora@t.com', name: 'Dora', passwordHash: await password.hash('senha-dora1'), mustChange: false });
+    const agent = request.agent(app);
+    page = await agent.get('/esqueci-senha');
+    const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];
+    mail.outbox.length = 0;
+    // e-mail inexistente: mesma resposta, nada enviado
+    let r = await agent.post('/esqueci-senha').type('form').send({ _csrf: csrf, email: 'ninguem@t.com' });
+    assert.match(r.text, /Se este e-mail estiver cadastrado/);
+    assert.strictEqual(mail.outbox.length, 0);
+    r = await agent.post('/esqueci-senha').type('form').send({ _csrf: csrf, email: 'DORA@t.com' });
+    assert.match(r.text, /Se este e-mail estiver cadastrado/);
+    assert.strictEqual(mail.outbox.length, 1);
+    assert.strictEqual(mail.outbox[0].to, 'dora@t.com');
+    const link = mail.outbox[0].text.match(/https:\/\/estudio\.teste\/redefinir-senha\?token=([\w-]+)/);
+    assert.ok(link, 'link usa APP_URL');
+    const token = link[1];
+    assert.strictEqual((await agent.get('/redefinir-senha?token=errado')).status, 400);
+    assert.strictEqual((await agent.get(`/redefinir-senha?token=${token}`)).status, 200);
+    r = await agent.post('/redefinir-senha').type('form').send({ _csrf: csrf, token, next: 'curta', confirm: 'curta' });
+    assert.strictEqual(r.status, 400);
+    r = await agent.post('/redefinir-senha').type('form').send({ _csrf: csrf, token, next: 'nova-senha-dora', confirm: 'nova-senha-dora' });
+    assert.strictEqual(r.status, 302);
+    await login('dora@t.com', 'nova-senha-dora');
+    // link não pode ser usado de novo
+    assert.strictEqual((await agent.get(`/redefinir-senha?token=${token}`)).status, 400);
+  } finally {
+    process.env = env;
+  }
+});
+
 test('admin cria usuário com senha temporária e troca obrigatória', async () => {
   const page = await admin.agent.get('/admin/usuarios/novo');
   const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];

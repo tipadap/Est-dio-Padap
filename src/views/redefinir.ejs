@@ -1,0 +1,18 @@
+<%- include('partials/head') %>
+<body>
+<div class="center-page">
+  <div class="card" style="text-align:left;max-width:460px">
+    <img src="/static/img/padap-logo-verde.png" alt="PADAP" style="width:170px">
+    <h1 style="font-size:24px;color:var(--teal-900)">Criar nova senha</h1>
+    <% if (error) { %><div class="alert alert-error" role="alert"><%= error %></div><% } %>
+    <form method="post" action="/redefinir-senha">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <input type="hidden" name="token" value="<%= token %>">
+      <div class="field"><label for="next">Nova senha (mínimo <%= minLength %> caracteres)</label><input class="text-input" id="next" name="next" type="password" autocomplete="new-password" minlength="<%= minLength %>" required autofocus></div>
+      <div class="field"><label for="confirm">Confirmar nova senha</label><input class="text-input" id="confirm" name="confirm" type="password" autocomplete="new-password" minlength="<%= minLength %>" required></div>
+      <button class="btn btn-primary btn-block" type="submit">Salvar nova senha</button>
+    </form>
+  </div>
+</div>
+</body>
+</html>

@@ -35,3 +35,17 @@ o app liga `trust proxy` sozinho (necessário para o cookie seguro atrás do HTT
 
 Cada código só funciona uma vez; se a variável ficar esquecida, os próximos deploys não apagam nada.
 Se `ADMIN_EMAIL`/`ADMIN_PASSWORD` estiverem inválidos, nada é apagado.
+
+## Recuperação de senha por e-mail (opcional)
+
+Sem estas variáveis, "Esqueci minha senha" orienta a falar com o administrador. Com elas, a
+pessoa recebe um link (válido por 1 hora, uso único) para criar uma nova senha.
+
+| Variável | Exemplo |
+|---|---|
+| `SMTP_HOST` | `smtp.gmail.com` (Google Workspace), `smtp.office365.com` (Microsoft 365) ou o do seu provedor |
+| `SMTP_PORT` | `587` (ou `465`) |
+| `SMTP_USER` | conta remetente, ex.: `nao-responda@padapagronegocios.com.br` |
+| `SMTP_PASS` | senha de app da conta (no Google/Microsoft, gere uma "senha de app") |
+| `SMTP_FROM` | `Estúdio PADAP <nao-responda@padapagronegocios.com.br>` |
+| `APP_URL` | endereço do sistema, ex.: `https://web-production-83f13.up.railway.app` (obrigatório em produção) |
