@@ -1,18 +1,13 @@
-import { readBoot, mountThumb, api, toast } from './render.js';
-import { TEMPLATES, buildPresentation, templatePhotos } from './templates.js';
+import { readBoot, mountThumb } from './render.js';
+import { TEMPLATES, templatePhotos } from './templates.js';
 import { presCard } from './lib-card.js';
 
 const boot = readBoot();
 const photos = boot.templatePhotos || {};
 
-async function create(templateId) {
-  try {
-    const { title, data } = buildPresentation(templateId, photos);
-    const { id } = await api('POST', '/api/presentations', { title, data });
-    location.href = `/editor/${id}`;
-  } catch (e) {
-    toast(e.message, 'error');
-  }
+// Abre o editor em modo rascunho: a apresentação só é salva na primeira edição.
+function create(templateId) {
+  location.href = `/editor/novo?modelo=${encodeURIComponent(templateId)}`;
 }
 
 document.getElementById('novo').addEventListener('click', () => create('branco'));

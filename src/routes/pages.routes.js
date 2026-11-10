@@ -46,6 +46,19 @@ router.get('/biblioteca', requireAuth, (req, res) => {
   });
 });
 
+// Rascunho: o editor abre já com o modelo escolhido, mas nada é gravado até a
+// primeira edição (evita apresentações vazias na Biblioteca).
+router.get('/editor/novo', requireAuth, (req, res) => {
+  const s = settings.all();
+  const templatePhotos = {};
+  for (const id of settings.TEMPLATE_IDS) if (s[`tpl:${id}`]) templatePhotos[id] = s[`tpl:${id}`];
+  const template = /^[\w-]{1,40}$/.test(req.query.modelo || '') ? req.query.modelo : 'branco';
+  res.render('editor', {
+    title: 'Nova apresentação',
+    boot: { id: null, draft: true, template, templatePhotos, teamVisible: false, shareToken: null, isAdmin: !!req.user.is_admin },
+  });
+});
+
 router.get('/editor/:id', requireAuth, (req, res) => {
   const pres = presentations.get(Number(req.params.id));
   if (!presentations.canView(req.user, pres)) return notFound(res);

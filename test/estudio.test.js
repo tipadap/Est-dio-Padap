@@ -93,6 +93,21 @@ test('API rejeita escrita sem token CSRF', async () => {
   assert.strictEqual(res.status, 403);
 });
 
+test('rascunho: /editor/novo não grava nada até a primeira edição', async () => {
+  const antes = (await ana.agent.get('/api/assets')).status;
+  assert.strictEqual(antes, 200);
+  const count = () => require('../src/db').prepare('SELECT COUNT(*) AS n FROM presentations').get().n;
+  const n = count();
+  const page = await ana.agent.get('/editor/novo?modelo=resultados');
+  assert.strictEqual(page.status, 200);
+  assert.match(page.text, /"id":null/);
+  assert.match(page.text, /"template":"resultados"/);
+  // modelo inválido vira branco; nada é gravado
+  const bad = await ana.agent.get('/editor/novo?modelo=%3Cscript%3E');
+  assert.match(bad.text, /"template":"branco"/);
+  assert.strictEqual(count(), n);
+});
+
 test('criar, salvar e reabrir apresentação', async () => {
   const c = await ana.agent.post('/api/presentations').set('x-csrf-token', ana.token).send({ title: 'Minha', data: slideData() });
   assert.strictEqual(c.status, 201);

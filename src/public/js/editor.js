@@ -1,11 +1,13 @@
 // Editor de apresentações do Estúdio PADAP.
 import { ICONS } from '/js/icons.js';
 import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api, toast, hasText, shapeSvg } from './render.js';
-import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER } from './templates.js';
+import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER, buildPresentation } from './templates.js';
 import { present } from './present.js';
 import { exportPptx } from './pptx.js';
 
 const boot = readBoot();
+// Rascunho (/editor/novo): monta o modelo aqui; só vira registro no primeiro salvamento.
+if (!boot.id) Object.assign(boot, buildPresentation(boot.template || 'branco', boot.templatePhotos || {}));
 const pres = { id: boot.id, title: boot.title, data: boot.data };
 const S = { cur: 0, sel: null, editing: null, zoom: 'fit', view: 'normal', lang: 'pt-BR', clipboard: null };
 
@@ -101,7 +103,16 @@ async function save() {
   pending = false;
   setStatus('Salvando…');
   try {
-    await api('PUT', `/api/presentations/${pres.id}`, { title: pres.title, data: pres.data });
+    if (!pres.id) {
+      // primeira edição do rascunho: cria a apresentação e passa a usar o endereço dela
+      const { id } = await api('POST', '/api/presentations', { title: pres.title, data: pres.data });
+      pres.id = id;
+      boot.id = id;
+      history.replaceState(null, '', `/editor/${id}`);
+      document.title = `${pres.title} · Estúdio PADAP`;
+    } else {
+      await api('PUT', `/api/presentations/${pres.id}`, { title: pres.title, data: pres.data });
+    }
     setStatus(pending ? 'Alterações não salvas' : 'Todas as alterações foram salvas');
   } catch (e) {
     pending = true;
@@ -111,6 +122,13 @@ async function save() {
   } finally {
     saving = false;
   }
+}
+
+/** Garante que a apresentação exista no banco (rascunho é salvo antes de compartilhar/imprimir). */
+async function ensureSaved() {
+  if (!pres.id) pending = true;
+  await flush();
+  return !!pres.id;
 }
 
 async function flush() {
@@ -1230,7 +1248,8 @@ function openPicker(category, onPick = insertImage) {
 
 // ---- Compartilhar ---------------------------------------------------------
 
-function openShare() {
+async function openShare() {
+  if (!(await ensureSaved())) return;
   const m = modal('Compartilhar');
   const link = () => (boot.shareToken ? `${location.origin}/v/${boot.shareToken}` : '');
   m.body.innerHTML = `
@@ -1289,14 +1308,14 @@ async function doExportPptx() {
 }
 
 async function openPrint(pdf) {
-  await flush();
+  if (!(await ensureSaved())) return;
   window.open(`/imprimir/${pres.id}?auto=1${pdf ? '&pdf=1' : ''}`, '_blank');
 }
 
 async function saveAs() {
   const title = prompt('Salvar uma cópia com o nome:', `${pres.title} (cópia)`);
   if (!title) return;
-  await flush();
+  if (!(await ensureSaved())) return;
   try {
     const { id } = await api('POST', `/api/presentations/${pres.id}/copy`, { title, data: pres.data });
     location.href = `/editor/${id}`;
@@ -1689,5 +1708,5 @@ document.addEventListener('keydown', (e) => {
 
 renderAll();
 updateUndoButtons();
-setStatus('Todas as alterações foram salvas');
+setStatus(pres.id ? 'Todas as alterações foram salvas' : 'Rascunho — será salvo na primeira edição');
 document.fonts?.ready.then(() => renderStage());

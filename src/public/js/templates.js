@@ -367,9 +367,9 @@ export const TEMPLATES = [
 
 /** Apresentação nova a partir de um modelo (ou em branco). */
 export function buildPresentation(templateId, photos = {}) {
-  if (!templateId || templateId === 'branco') {
+  const t = TEMPLATES.find((x) => x.id === templateId);
+  if (!t) {
     return { title: 'Apresentação sem título', data: { version: 1, theme: 'branco', slides: [L('capaSimples', {})] } };
   }
-  const t = TEMPLATES.find((x) => x.id === templateId);
   return { title: t.name, data: { version: 1, theme: t.id, slides: t.build(templatePhotos(t.id, photos)) } };
 }
