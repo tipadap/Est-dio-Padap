@@ -12,7 +12,9 @@
     "start": "node src/server.js",
     "dev": "node --watch src/server.js",
     "create-admin": "node scripts/create-admin.js",
-    "test": "node --test --test-force-exit"
+    "test": "node --test --test-force-exit",
+    "banco-imagens": "node scripts/banco-imagens.js",
+    "modelos:converter": "node scripts/modelos-pptx/converter.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
@@ -25,13 +27,17 @@
     "express-rate-limit": "^7.4.1",
     "express-session": "^1.18.1",
     "helmet": "^8.0.0",
-    "jspdf": "^3.0.4",
+    "jspdf": "^4.2.1",
     "multer": "^2.0.1",
-    "nodemailer": "^7.0.13",
+    "nodemailer": "^10.5.0",
     "pptxgenjs": "^4.0.1",
     "sanitize-html": "^2.13.0"
   },
   "devDependencies": {
+    "sharp": "^0.35.5",
     "supertest": "^7.0.0"
+  },
+  "overrides": {
+    "image-size": "^2.0.3"
   }
 }
