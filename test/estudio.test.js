@@ -259,3 +259,36 @@ test('admin cria usuário com senha temporária e troca obrigatória', async () 
   assert.strictEqual(api.status, 403);
   assert.strictEqual((await ana.agent.get('/admin/usuarios')).status, 302);
 });
+
+// Deve ser o último teste: apaga todos os usuários do banco de testes.
+test('ADMIN_WIPE_USERS apaga todos e recria só o admin, uma vez por código', async () => {
+  const bootstrap = require('../src/lib/bootstrap');
+  const db = require('../src/db');
+  const env = { ...process.env };
+  try {
+    delete process.env.ADMIN_RESET;
+    const presBefore = db.prepare('SELECT COUNT(*) AS n FROM presentations').get().n;
+    assert.ok(presBefore > 0 && users.list().length > 2);
+
+    // Variáveis inválidas: cancela e não apaga nada.
+    Object.assign(process.env, { ADMIN_WIPE_USERS: 'APAGAR-1', ADMIN_EMAIL: 'novo@t.com', ADMIN_PASSWORD: '123' });
+    bootstrap();
+    assert.ok(users.list().length > 2);
+
+    // Válido: só sobra o novo admin; apresentações e sessões somem.
+    process.env.ADMIN_PASSWORD = 'senha-do-novo';
+    bootstrap();
+    const all = users.list();
+    assert.deepStrictEqual(all.map((u) => u.email), ['novo@t.com']);
+    assert.strictEqual(db.prepare('SELECT COUNT(*) AS n FROM presentations').get().n, 0);
+    assert.strictEqual((await ana.agent.get('/api/assets')).status, 401, 'sessão antiga encerrada');
+    await login('novo@t.com', 'senha-do-novo');
+
+    // Variável esquecida (mesmo código): não apaga de novo.
+    users.create({ email: 'equipe@t.com', name: 'Equipe', passwordHash: await password.hash('senha-equipe'), mustChange: false });
+    bootstrap();
+    assert.ok(users.getAuthRecordByEmail('equipe@t.com'));
+  } finally {
+    process.env = env;
+  }
+});

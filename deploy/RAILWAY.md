@@ -23,3 +23,15 @@ o app liga `trust proxy` sozinho (necessário para o cookie seguro atrás do HTT
 2. Adicione `ADMIN_RESET=1` e clique em **Deploy**.
 3. Nos logs deve aparecer: `Senha do administrador "…" redefinida` (ou `Administrador "…" criado`).
 4. Entre com esse e-mail e senha. Depois **apague `ADMIN_RESET` e `ADMIN_PASSWORD`** e faça Deploy de novo.
+
+## Apagar todos os usuários e recomeçar
+
+**Irreversível:** apaga todos os usuários e as apresentações deles, e derruba todas as sessões.
+
+1. Em **Variables**, defina `ADMIN_EMAIL` e `ADMIN_PASSWORD` (mínimo 8 caracteres) — será o único usuário depois.
+2. Crie `ADMIN_WIPE_USERS` com um código qualquer, ex.: `APAGAR-2026-11-10`, e clique em **Deploy**.
+3. Nos logs: `ADMIN_WIPE_USERS: N usuário(s) e M apresentação(ões) apagados...`.
+4. Entre com o novo admin e **apague `ADMIN_WIPE_USERS` e `ADMIN_PASSWORD`**.
+
+Cada código só funciona uma vez; se a variável ficar esquecida, os próximos deploys não apagam nada.
+Se `ADMIN_EMAIL`/`ADMIN_PASSWORD` estiverem inválidos, nada é apagado.
