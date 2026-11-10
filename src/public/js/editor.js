@@ -10,7 +10,8 @@ const boot = readBoot();
 // Rascunho (/editor/novo): monta o modelo aqui; só vira registro no primeiro salvamento.
 if (!boot.id) Object.assign(boot, buildPresentation(boot.template || 'branco', boot.templatePhotos || {}));
 const pres = { id: boot.id, title: boot.title, data: boot.data };
-const S = { cur: 0, sel: null, editing: null, zoom: 'fit', view: 'normal', lang: 'pt-BR', clipboard: null };
+// sel = elemento selecionado (um); group = ids quando há vários selecionados (sel fica null)
+const S = { cur: 0, sel: null, group: [], editing: null, zoom: 'fit', view: 'normal', lang: 'pt-BR', clipboard: null };
 
 const $ = (s) => document.querySelector(s);
 const ic = (n) => `<svg class="i" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
@@ -23,6 +24,9 @@ const slides = () => pres.data.slides;
 const curSlide = () => slides()[S.cur];
 const findEl = (id) => curSlide().elements.find((e) => e.id === id);
 const selEl = () => (S.sel ? findEl(S.sel) : null);
+const groupEls = () => S.group.map(findEl).filter(Boolean);
+/** Elementos selecionados (um ou vários). */
+const selection = () => (S.group.length ? groupEls() : selEl() ? [selEl()] : []);
 const nodeOf = (id) => stage.querySelector(`.el[data-id="${CSS.escape(id)}"]`);
 const clone = (o) => JSON.parse(JSON.stringify(o));
 
@@ -53,6 +57,7 @@ function restore(st) {
   pres.data.slides = JSON.parse(st.s);
   S.cur = clamp(st.cur, 0, slides().length - 1);
   S.sel = null;
+  S.group = [];
   renderAll();
   scheduleSave();
   updateUndoButtons();
@@ -188,10 +193,25 @@ function rerenderEl(el) {
 }
 
 function drawSelection() {
-  stage.querySelector('.sel-box')?.remove();
+  stage.querySelectorAll('.sel-box').forEach((b) => b.remove());
+  const z = zoom();
+  if (S.group.length) {
+    const els = groupEls();
+    for (const g of els) {
+      const b = document.createElement('div');
+      b.className = 'sel-box multi';
+      Object.assign(b.style, { left: `${g.x * z}px`, top: `${g.y * z}px`, width: `${g.w * z}px`, height: `${g.h * z}px` });
+      stage.appendChild(b);
+    }
+    const bb = bbox(els);
+    const b = document.createElement('div');
+    b.className = 'sel-box group';
+    Object.assign(b.style, { left: `${bb.x * z - 6}px`, top: `${bb.y * z - 6}px`, width: `${bb.w * z + 12}px`, height: `${bb.h * z + 12}px` });
+    stage.appendChild(b);
+    return;
+  }
   const el = selEl();
   if (!el) return;
-  const z = zoom();
   const box = document.createElement('div');
   box.className = `sel-box${S.editing ? ' editing' : ''}`;
   Object.assign(box.style, { left: `${el.x * z}px`, top: `${el.y * z}px`, width: `${el.w * z}px`, height: `${el.h * z}px` });
@@ -270,8 +290,25 @@ function renderAll() {
 // Seleção, mover, redimensionar
 // ============================================================================
 
+function bbox(els) {
+  const x = Math.min(...els.map((g) => g.x));
+  const y = Math.min(...els.map((g) => g.y));
+  return { x, y, w: Math.max(...els.map((g) => g.x + g.w)) - x, h: Math.max(...els.map((g) => g.y + g.h)) - y };
+}
+
+/** Seleciona vários (1 id = seleção simples; 0 = nada). */
+function setGroup(ids) {
+  if (S.editing) exitEdit();
+  const uniq = [...new Set(ids)].filter((id) => findEl(id));
+  S.group = uniq.length > 1 ? uniq : [];
+  S.sel = uniq.length === 1 ? uniq[0] : null;
+  drawSelection();
+  syncToolbar();
+}
+
 function select(id) {
-  if (S.sel === id) return;
+  if (S.sel === id && !S.group.length) return;
+  S.group = [];
   if (S.editing && S.editing !== id) exitEdit();
   S.sel = id;
   drawSelection();
@@ -282,6 +319,7 @@ function selectSlide(i) {
   exitEdit();
   S.cur = clamp(i, 0, slides().length - 1);
   S.sel = null;
+  S.group = [];
   panel.querySelectorAll('.sthumb').forEach((n) => n.classList.toggle('active', Number(n.dataset.i) === S.cur));
   panel.querySelector('.sthumb.active')?.scrollIntoView({ block: 'nearest' });
   renderStage();
@@ -356,6 +394,66 @@ function startMove(e, id, wasSelected) {
   window.addEventListener('pointerup', up);
 }
 
+function startGroupMove(e) {
+  const els = groupEls();
+  const orig = els.map((g) => ({ g, x: g.x, y: g.y }));
+  const sx = e.clientX;
+  const sy = e.clientY;
+  const z = zoom();
+  let moved = false;
+  const move = (ev) => {
+    if (!moved && Math.hypot(ev.clientX - sx, ev.clientY - sy) < 4) return;
+    moved = true;
+    const dx = Math.round((ev.clientX - sx) / z);
+    const dy = Math.round((ev.clientY - sy) / z);
+    for (const o of orig) {
+      o.g.x = o.x + dx;
+      o.g.y = o.y + dy;
+      const n = nodeOf(o.g.id);
+      n.style.left = `${o.g.x}px`;
+      n.style.top = `${o.g.y}px`;
+    }
+    drawSelection();
+  };
+  const up = () => {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    if (moved) commit();
+  };
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+}
+
+/** Retângulo de seleção: arrastar numa área vazia seleciona o que ele tocar. */
+function startMarquee(e) {
+  const rect = stage.getBoundingClientRect();
+  const z = zoom();
+  const p0 = { x: (e.clientX - rect.left) / z, y: (e.clientY - rect.top) / z };
+  const base = e.shiftKey ? selection().map((g) => g.id) : [];
+  const box = document.createElement('div');
+  box.className = 'marquee';
+  stage.appendChild(box);
+  let r = null;
+  const move = (ev) => {
+    const p = { x: (ev.clientX - rect.left) / z, y: (ev.clientY - rect.top) / z };
+    r = { x: Math.min(p0.x, p.x), y: Math.min(p0.y, p.y), w: Math.abs(p.x - p0.x), h: Math.abs(p.y - p0.y) };
+    Object.assign(box.style, { left: `${r.x * z}px`, top: `${r.y * z}px`, width: `${r.w * z}px`, height: `${r.h * z}px` });
+  };
+  const up = () => {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    box.remove();
+    if (!r || r.w * z < 4 || r.h * z < 4) {
+      if (!e.shiftKey) select(null);
+      return;
+    }
+    const hit = curSlide().elements.filter((g) => !g.locked && g.x < r.x + r.w && g.x + g.w > r.x && g.y < r.y + r.h && g.y + g.h > r.y);
+    setGroup([...base, ...hit.map((g) => g.id)]);
+  };
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+}
+
 function startResize(e, dir) {
   e.preventDefault();
   e.stopPropagation();
@@ -420,9 +518,16 @@ stage.addEventListener('pointerdown', (e) => {
   const node = e.target.closest('.el');
   if (S.editing && node && node.dataset.id === S.editing) return; // cursor de texto
   if (S.editing) exitEdit();
-  if (!node) return select(null);
   e.preventDefault();
+  if (!node) return startMarquee(e);
   const id = node.dataset.id;
+  if (e.shiftKey) {
+    // Shift + clique: adiciona/remove da seleção
+    const cur = selection().map((g) => g.id);
+    setGroup(cur.includes(id) ? cur.filter((x) => x !== id) : [...cur, id]);
+    return undefined;
+  }
+  if (S.group.includes(id)) return startGroupMove(e);
   const was = S.sel === id;
   select(id);
   startMove(e, id, was);
@@ -823,22 +928,34 @@ async function insertProduct(url, asset) {
 }
 
 function deleteSelected() {
-  if (!S.sel) return;
-  const list = curSlide().elements;
-  const i = list.findIndex((e) => e.id === S.sel);
-  if (i >= 0) list.splice(i, 1);
+  const ids = new Set(selection().map((g) => g.id));
+  if (!ids.size) return;
+  curSlide().elements = curSlide().elements.filter((g) => !ids.has(g.id));
   S.sel = null;
+  S.group = [];
   S.editing = null;
   renderStage();
   commit();
 }
 
 function duplicateSelected() {
-  const el = selEl();
-  if (!el) return;
-  const c = { ...clone(el), id: uid(), x: el.x + 30, y: el.y + 30 };
-  delete c.locked;
-  addElement(c);
+  pasteElements(selection());
+}
+
+/** Insere cópias (deslocadas 30 px) e seleciona as cópias. */
+function pasteElements(els) {
+  if (!els.length) return;
+  exitEdit();
+  const copies = els.map((g) => {
+    const c = { ...clone(g), id: uid(), x: g.x + 30, y: g.y + 30 };
+    delete c.locked;
+    return c;
+  });
+  curSlide().elements.push(...copies);
+  renderStage();
+  setGroup(copies.map((c) => c.id));
+  commit();
+  return copies;
 }
 
 function reorder(how) {
@@ -850,6 +967,35 @@ function reorder(how) {
   list.splice(to, 0, el);
   renderStage();
   drawSelection();
+  commit();
+}
+
+/** Vários selecionados: alinha entre si (pela caixa do grupo) ou distribui. */
+function alignGroup(how) {
+  const els = groupEls();
+  if (els.length < 2) return;
+  const b = bbox(els);
+  if (how === 'distH' || how === 'distV') {
+    const k = how === 'distH' ? ['x', 'w'] : ['y', 'h'];
+    const sorted = [...els].sort((p, q) => p[k[0]] - q[k[0]]);
+    const total = sorted.reduce((s, g) => s + g[k[1]], 0);
+    const gap = ((how === 'distH' ? b.w : b.h) - total) / (sorted.length - 1);
+    let pos = how === 'distH' ? b.x : b.y;
+    for (const g of sorted) {
+      g[k[0]] = Math.round(pos);
+      pos += g[k[1]] + gap;
+    }
+  } else {
+    for (const g of els) {
+      if (how === 'left') g.x = b.x;
+      if (how === 'hcenter') g.x = Math.round(b.x + (b.w - g.w) / 2);
+      if (how === 'right') g.x = b.x + b.w - g.w;
+      if (how === 'top') g.y = b.y;
+      if (how === 'vcenter') g.y = Math.round(b.y + (b.h - g.h) / 2);
+      if (how === 'bottom') g.y = b.y + b.h - g.h;
+    }
+  }
+  renderStage();
   commit();
 }
 
@@ -867,13 +1013,15 @@ function alignOnSlide(how) {
 }
 
 function nudge(dx, dy) {
-  const el = selEl();
-  if (!el) return;
-  el.x += dx;
-  el.y += dy;
-  const n = nodeOf(el.id);
-  n.style.left = `${el.x}px`;
-  n.style.top = `${el.y}px`;
+  const els = selection();
+  if (!els.length) return;
+  for (const el of els) {
+    el.x += dx;
+    el.y += dy;
+    const n = nodeOf(el.id);
+    n.style.left = `${el.x}px`;
+    n.style.top = `${el.y}px`;
+  }
   drawSelection();
   clearTimeout(nudge.t);
   nudge.t = setTimeout(commit, 400);
@@ -1507,6 +1655,23 @@ const COMMANDS = {
     showMenu(btn, (m) => {
       const el = selEl();
       const has = !!el;
+      if (S.group.length) {
+        mhead(m, `${S.group.length} elementos selecionados`);
+        mhead(m, 'Alinhar entre si');
+        mi(m, 'Alinhar à esquerda', () => alignGroup('left'));
+        mi(m, 'Centralizar na horizontal', () => alignGroup('hcenter'));
+        mi(m, 'Alinhar à direita', () => alignGroup('right'));
+        mi(m, 'Alinhar ao topo', () => alignGroup('top'));
+        mi(m, 'Centralizar na vertical', () => alignGroup('vcenter'));
+        mi(m, 'Alinhar à base', () => alignGroup('bottom'));
+        mhead(m, 'Distribuir');
+        mi(m, 'Espaçar igualmente na horizontal', () => alignGroup('distH'), { disabled: S.group.length < 3 });
+        mi(m, 'Espaçar igualmente na vertical', () => alignGroup('distV'), { disabled: S.group.length < 3 });
+        msep(m);
+        mi(m, 'Duplicar (Ctrl+D)', duplicateSelected, { icon: 'copy' });
+        mi(m, 'Excluir (Delete)', deleteSelected, { icon: 'trash' });
+        return;
+      }
       mhead(m, 'Ordem');
       mi(m, 'Trazer para a frente', () => reorder('front'), { disabled: !has });
       mi(m, 'Avançar', () => reorder('forward'), { disabled: !has });
@@ -1667,7 +1832,7 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     closeMenu();
     if (S.editing) exitEdit();
-    else select(null);
+    else setGroup([]);
     return;
   }
   const inField = e.target.closest('input, select, textarea');
@@ -1683,27 +1848,29 @@ document.addEventListener('keydown', (e) => {
   } else if (mod && k === 'd') {
     e.preventDefault();
     duplicateSelected();
-  } else if (mod && k === 'c' && selEl()) {
-    S.clipboard = clone(selEl());
-  } else if (mod && k === 'x' && selEl()) {
-    S.clipboard = clone(selEl());
+  } else if (mod && k === 'a') {
+    e.preventDefault();
+    setGroup(curSlide().elements.filter((g) => !g.locked).map((g) => g.id));
+  } else if (mod && k === 'c' && selection().length) {
+    S.clipboard = clone(selection());
+  } else if (mod && k === 'x' && selection().length) {
+    S.clipboard = clone(selection());
     deleteSelected();
   } else if (mod && k === 'v' && S.clipboard) {
     e.preventDefault();
-    const c = { ...clone(S.clipboard), id: uid(), x: S.clipboard.x + 30, y: S.clipboard.y + 30 };
-    S.clipboard = clone(c);
-    addElement(c);
+    // cada colagem desloca mais 30 px (a próxima cópia não cai em cima)
+    S.clipboard = clone(pasteElements(S.clipboard));
   } else if (mod && ['b', 'i', 'u'].includes(k) && selEl()?.type === 'text') {
     e.preventDefault();
     toggleInline({ b: 'bold', i: 'italic', u: 'underline' }[k]);
   } else if (e.key === 'Delete' || e.key === 'Backspace') {
-    if (selEl()) deleteSelected();
+    if (selection().length) deleteSelected();
     else if (document.activeElement?.closest('#slides')) deleteSlide(S.cur);
     else return;
     e.preventDefault();
   } else if (e.key.startsWith('Arrow')) {
     const step = e.shiftKey ? 10 : 1;
-    if (selEl()) {
+    if (selection().length) {
       const d = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
       nudge(...d);
     } else if (e.key === 'ArrowDown' || e.key === 'ArrowRight') selectSlide(S.cur + 1);

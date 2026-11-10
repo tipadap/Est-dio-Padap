@@ -192,3 +192,8 @@ html, body { height: 100%; overflow: hidden; }
 .picker-filters select { width: auto; height: 36px; font-size: 14px; }
 .picker-filters .check { font-size: 14px; margin-left: auto; }
 .picker-grid.contain img { object-fit: contain; background: #F1F5F6; padding: 6px; }
+
+/* Seleção múltipla */
+.sel-box.multi { border-width: 1px; }
+.sel-box.group { border: 1px dashed var(--green); }
+.marquee { position: absolute; z-index: 11; border: 1px solid var(--green); background: rgba(29, 189, 44, .08); pointer-events: none; }
