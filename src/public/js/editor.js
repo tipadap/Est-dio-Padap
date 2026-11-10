@@ -1,6 +1,6 @@
 // Editor de apresentações do Estúdio PADAP.
 import { ICONS } from '/js/icons.js';
-import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api, toast, hasText, shapeSvg } from './render.js';
+import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api, toast, hasText, shapeSvg, fmtDate } from './render.js';
 import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER, buildPresentation } from './templates.js';
 import { present } from './present.js';
 import { exportPptx } from './pptx.js';
@@ -1456,6 +1456,66 @@ async function doExportPptx() {
   }
 }
 
+// ---- Histórico de versões ----------------------------------------------------
+
+async function openHistory() {
+  if (!pres.id) return toast('Esta apresentação ainda não foi salva — não há versões anteriores.');
+  await flush();
+  const m = modal('Histórico de versões', { wide: true });
+  m.body.innerHTML = `<p class="muted" style="margin-top:0">Uma cópia é guardada automaticamente a cada 10 minutos de edição (até as 50 mais recentes). Restaurar não apaga nada: a versão atual também fica guardada.</p>
+    <div class="history"><div class="history-list"></div><div class="history-preview"><div class="muted">Escolha uma versão à esquerda.</div></div></div>`;
+  const listBox = m.body.querySelector('.history-list');
+  const prev = m.body.querySelector('.history-preview');
+  let versions = [];
+  try {
+    versions = (await api('GET', `/api/presentations/${pres.id}/versions`)).versions;
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+  if (!versions.length) {
+    listBox.innerHTML = '<div class="empty">Ainda não há versões anteriores. Elas aparecem depois de alguns minutos de edição.</div>';
+    return undefined;
+  }
+  for (const v of versions) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'history-item';
+    b.innerHTML = '<strong></strong><span></span>';
+    b.querySelector('strong').textContent = fmtDate(v.created_at);
+    b.querySelector('span').textContent = [v.reason === 'restore' ? 'Antes de uma restauração' : null, v.author_name, `${v.slide_count} slide${v.slide_count === 1 ? '' : 's'}`].filter(Boolean).join(' · ');
+    b.addEventListener('click', async () => {
+      listBox.querySelectorAll('.history-item').forEach((x) => x.classList.toggle('on', x === b));
+      prev.innerHTML = '<div class="muted">Carregando…</div>';
+      try {
+        const full = await api('GET', `/api/presentations/${pres.id}/versions/${v.id}`);
+        prev.innerHTML = `<div class="history-head"><strong></strong><button class="btn btn-primary btn-sm" type="button">Restaurar esta versão</button></div><div class="history-thumbs"></div>`;
+        prev.querySelector('strong').textContent = `${full.title} — ${fmtDate(full.created_at)}`;
+        const thumbs = prev.querySelector('.history-thumbs');
+        for (const s of full.data.slides) {
+          const t = document.createElement('div');
+          thumbs.appendChild(t);
+          mountThumb(t, s);
+        }
+        prev.querySelector('button').addEventListener('click', async () => {
+          if (!confirm('Restaurar esta versão? A versão atual será guardada no histórico.')) return;
+          try {
+            await api('POST', `/api/presentations/${pres.id}/versions/${v.id}/restore`);
+            pending = false;
+            location.reload();
+          } catch (err) {
+            toast(err.message, 'error');
+          }
+        });
+      } catch (err) {
+        prev.innerHTML = '';
+        toast(err.message, 'error');
+      }
+    });
+    listBox.appendChild(b);
+  }
+  return undefined;
+}
+
 async function doExportPdf() {
   await flush();
   toast('Gerando o PDF…');
@@ -1521,6 +1581,8 @@ const COMMANDS = {
       mi(m, 'Salvar (Ctrl+S)', saveNow, { icon: 'save' });
       mi(m, 'Salvar como… (fazer uma cópia)', saveAs, { icon: 'saveAs' });
       mi(m, 'Imprimir', () => openPrint(false), { icon: 'printer' });
+      msep(m);
+      mi(m, 'Histórico de versões', openHistory, { icon: 'undo' });
     }),
   undo,
   redo,

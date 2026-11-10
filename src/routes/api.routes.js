@@ -3,6 +3,7 @@
 const express = require('express');
 const config = require('../config');
 const presentations = require('../lib/presentations');
+const versions = require('../lib/versions');
 const assets = require('../lib/assets');
 const portfolio = require('../lib/portfolio');
 const settings = require('../lib/settings');
@@ -53,11 +54,36 @@ router.put('/presentations/:id', csrf.verify, (req, res) => {
     const patch = {};
     if (req.body.title !== undefined) patch.title = cleanTitle(req.body.title);
     if (req.body.data !== undefined) patch.data = cleanPresentation(req.body.data);
+    if (patch.data) versions.snapshotBeforeSave(pres, req.user.id); // histórico (no máx. 1 cópia a cada 10 min)
     presentations.save(pres.id, patch);
     return res.json({ ok: true, updatedAt: presentations.get(pres.id).updated_at });
   } catch (err) {
     return bad(res, err.message);
   }
+});
+
+// Histórico de versões
+router.get('/presentations/:id/versions', (req, res) => {
+  const pres = editable(req, res);
+  if (!pres) return undefined;
+  return res.json({ versions: versions.list(pres.id) });
+});
+
+router.get('/presentations/:id/versions/:vid', (req, res) => {
+  const pres = editable(req, res);
+  if (!pres) return undefined;
+  const v = versions.get(pres.id, Number(req.params.vid));
+  if (!v) return bad(res, 'Versão não encontrada.', 404);
+  return res.json({ id: v.id, title: v.title, created_at: v.created_at, data: JSON.parse(v.data) });
+});
+
+router.post('/presentations/:id/versions/:vid/restore', csrf.verify, (req, res) => {
+  const pres = editable(req, res);
+  if (!pres) return undefined;
+  const v = versions.get(pres.id, Number(req.params.vid));
+  if (!v) return bad(res, 'Versão não encontrada.', 404);
+  versions.restore(pres, v, req.user.id);
+  return res.json({ ok: true });
 });
 
 // Salvar como / duplicar. Qualquer um que possa VER pode fazer uma cópia própria.

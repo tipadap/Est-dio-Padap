@@ -124,6 +124,31 @@ test('criar, salvar e reabrir apresentação', async () => {
   assert.strictEqual(ed.status, 200);
 });
 
+test('histórico de versões: cópia a cada 10 min, restaurar e permissão', async () => {
+  const h = { 'x-csrf-token': ana.token };
+  const { body: c } = await ana.agent.post('/api/presentations').set(h).send({ title: 'Versões', data: slideData('v1') });
+  const put = (html) => ana.agent.put(`/api/presentations/${c.id}`).set(h).send({ data: slideData(html) });
+  await put('v2'); // guarda v1
+  await put('v3'); // menos de 10 min: não guarda de novo
+  let list = (await ana.agent.get(`/api/presentations/${c.id}/versions`)).body.versions;
+  assert.strictEqual(list.length, 1);
+  assert.strictEqual(list[0].slide_count, 1);
+  const v = (await ana.agent.get(`/api/presentations/${c.id}/versions/${list[0].id}`)).body;
+  assert.strictEqual(v.data.slides[0].elements[0].html, 'v1');
+  // outra pessoa não vê nem restaura
+  assert.strictEqual((await bia.agent.get(`/api/presentations/${c.id}/versions`)).status, 404);
+  assert.strictEqual((await bia.agent.post(`/api/presentations/${c.id}/versions/${list[0].id}/restore`).set('x-csrf-token', bia.token)).status, 404);
+  // restaurar volta para v1 e guarda a v3 como "antes de restaurar"
+  assert.strictEqual((await ana.agent.post(`/api/presentations/${c.id}/versions/${list[0].id}/restore`).set(h)).status, 200);
+  const now = (await ana.agent.get(`/api/presentations/${c.id}`)).body;
+  assert.strictEqual(now.data.slides[0].elements[0].html, 'v1');
+  list = (await ana.agent.get(`/api/presentations/${c.id}/versions`)).body.versions;
+  assert.strictEqual(list.length, 2);
+  assert.strictEqual(list[0].reason, 'restore');
+  const saved = (await ana.agent.get(`/api/presentations/${c.id}/versions/${list[0].id}`)).body;
+  assert.strictEqual(saved.data.slides[0].elements[0].html, 'v3');
+});
+
 test('HTML perigoso é removido ao salvar (XSS)', async () => {
   const evil = '<img src=x onerror=alert(1)><script>alert(2)</script><span style="color:#ff0000;position:fixed">ok</span><a href="javascript:x">l</a>';
   const c = await ana.agent.post('/api/presentations').set('x-csrf-token', ana.token).send({ title: '<b>t</b>', data: slideData(evil) });
