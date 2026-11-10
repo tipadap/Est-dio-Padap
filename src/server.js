@@ -65,6 +65,17 @@ app.use('/vendor', express.static(config.paths.vendor, cache));
 app.use('/vendor-pdf', express.static(require('path').join(config.root, 'node_modules', 'jspdf', 'dist'), cache));
 app.use('/uploads', express.static(config.paths.uploads, cache));
 
+// Verificação de saúde (Railway): o deploy novo só substitui o antigo quando isto responde 200.
+// Confere que o banco abre e responde; não exige login e não expõe dados.
+app.get('/health', (req, res) => {
+  try {
+    db.prepare('SELECT 1').get();
+    res.set('Cache-Control', 'no-store').json({ ok: true, version: config.version, build: config.build });
+  } catch (e) {
+    res.status(503).json({ ok: false });
+  }
+});
+
 // Mesmo conjunto de ícones das views, como módulo ES para o navegador.
 const iconsModule = `export const ICONS = ${JSON.stringify(ICONS)};\n`;
 app.get('/js/icons.js', (req, res) => res.type('application/javascript').send(iconsModule));
@@ -125,6 +136,7 @@ if (require.main === module) {
     console.log(`Estúdio PADAP rodando na porta ${config.port} (${config.env})`);
     console.log(`  trustProxy=${config.trustProxy}  cookieSecure=${config.isProd}  dataDir=${config.dataDir || '(local ./data)'}`);
   });
+  require('./lib/backup').schedule();
 }
 
 module.exports = app;

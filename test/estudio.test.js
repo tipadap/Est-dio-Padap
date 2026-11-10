@@ -342,6 +342,73 @@ test('Banco de imagens embutido: ~50 fotos com tema, miniatura e arquivos presen
   await admin.agent.post('/api/settings').set('x-csrf-token', admin.token).send({ key: 'home_banner', value: null });
 });
 
+test('/health responde sem login e confere o banco', async () => {
+  const res = await request(app).get('/health');
+  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.body.ok, true);
+  assert.ok(!res.headers['set-cookie'], 'não cria sessão');
+});
+
+// Lê um .zip "store" (sem compressão) e devolve { nome: Buffer }.
+function readZip(buf) {
+  const out = {};
+  let i = 0;
+  while (buf.readUInt32LE(i) === 0x04034b50) {
+    const size = buf.readUInt32LE(i + 18);
+    const nameLen = buf.readUInt16LE(i + 26);
+    const extra = buf.readUInt16LE(i + 28);
+    const name = buf.slice(i + 30, i + 30 + nameLen).toString('utf8');
+    const start = i + 30 + nameLen + extra;
+    out[name] = buf.slice(start, start + size);
+    i = start + size;
+  }
+  assert.strictEqual(buf.readUInt32LE(buf.length - 22), 0x06054b50, 'fim do zip');
+  return out;
+}
+
+test('backup: só admin; .zip com banco válido e imagens enviadas; cópias diárias com limite', async () => {
+  assert.notStrictEqual((await ana.agent.get('/admin/backup')).status, 200);
+  assert.notStrictEqual((await ana.agent.get('/admin/backup/download')).status, 200);
+  assert.match((await admin.agent.get('/admin/backup')).text, /Baixar backup completo/);
+
+  // uma imagem enviada para conferir que entra no zip
+  const up = await ana.agent.post('/api/assets').set('x-csrf-token', ana.token).field('category', 'user').attach('image', PNG_1PX, { filename: 'b.png', contentType: 'image/png' });
+  const uploaded = path.basename(up.body.asset.url);
+
+  const res = await admin.agent
+    .get('/admin/backup/download')
+    .buffer(true)
+    .parse((r, cb) => {
+      const chunks = [];
+      r.on('data', (c) => chunks.push(c));
+      r.on('end', () => cb(null, Buffer.concat(chunks)));
+    });
+  assert.strictEqual(res.status, 200);
+  assert.match(res.headers['content-disposition'], /estudio-padap-backup-\d{4}-\d{2}-\d{2}\.zip/);
+  const files = readZip(res.body);
+  assert.ok(files['estudio.db'], 'banco no zip');
+  assert.strictEqual(files['estudio.db'].slice(0, 15).toString(), 'SQLite format 3');
+  assert.ok(files[`uploads/${uploaded}`], 'imagem enviada no zip');
+  // o banco do backup abre e tem os usuários
+  const copia = path.join(tmp, 'copia-teste.db');
+  fs.writeFileSync(copia, files['estudio.db']);
+  const Database = require('better-sqlite3');
+  const bdb = new Database(copia, { readonly: true });
+  assert.ok(bdb.prepare('SELECT COUNT(*) AS n FROM users').get().n >= 3);
+  bdb.close();
+
+  // cópia diária: cria a do dia e mantém só as 7 mais recentes
+  const backup = require('../src/lib/backup');
+  const dir = path.join(tmp, 'backups');
+  fs.mkdirSync(dir, { recursive: true });
+  for (let d = 1; d <= 9; d++) fs.writeFileSync(path.join(dir, `estudio-2020-01-0${d}.db`), 'x');
+  await backup.daily();
+  const list = backup.list();
+  assert.strictEqual(list.length, 7);
+  assert.strictEqual(list[0].date, backup.stamp());
+  assert.ok(!list.some((c) => c.date === '2020-01-01'), 'as mais antigas saem');
+});
+
 test('ADMIN_RESET recupera o acesso do administrador pelas variáveis de ambiente', async () => {
   const bootstrap = require('../src/lib/bootstrap');
   const env = { ...process.env };
