@@ -7,18 +7,7 @@ const db = require('../db');
 const INTERVAL_MIN = 10;
 const MAX_PER_PRES = 50;
 
-db.exec(`
-  CREATE TABLE IF NOT EXISTS presentation_versions (
-    id               INTEGER PRIMARY KEY AUTOINCREMENT,
-    presentation_id  INTEGER NOT NULL REFERENCES presentations(id) ON DELETE CASCADE,
-    title            TEXT NOT NULL,
-    data             TEXT NOT NULL,
-    author_id        INTEGER REFERENCES users(id) ON DELETE SET NULL,
-    reason           TEXT NOT NULL DEFAULT 'auto',
-    created_at       TEXT NOT NULL DEFAULT (datetime('now'))
-  );
-  CREATE INDEX IF NOT EXISTS idx_versions_pres ON presentation_versions(presentation_id, id);
-`);
+// Tabela presentation_versions: src/migrations.js.
 
 function insert(pres, authorId, reason) {
   db.prepare('INSERT INTO presentation_versions (presentation_id, title, data, author_id, reason) VALUES (?, ?, ?, ?, ?)').run(
