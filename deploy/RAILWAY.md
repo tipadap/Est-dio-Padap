@@ -16,3 +16,10 @@ Mesmo processo do Portal do Produtor.
 
 O `railway.json`, `nixpacks.toml` e `Procfile` já estão prontos. Com `NODE_ENV=production`
 o app liga `trust proxy` sozinho (necessário para o cookie seguro atrás do HTTPS do Railway).
+
+## Perdeu o acesso do administrador?
+
+1. Em **Variables**, confira `ADMIN_EMAIL` e defina uma `ADMIN_PASSWORD` nova (mínimo 8 caracteres).
+2. Adicione `ADMIN_RESET=1` e clique em **Deploy**.
+3. Nos logs deve aparecer: `Senha do administrador "…" redefinida` (ou `Administrador "…" criado`).
+4. Entre com esse e-mail e senha. Depois **apague `ADMIN_RESET` e `ADMIN_PASSWORD`** e faça Deploy de novo.

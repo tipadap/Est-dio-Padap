@@ -216,6 +216,35 @@ test('Portfólio 2026 embutido aparece no Portfólio e os arquivos existem', asy
   assert.ok(!(await ana.agent.get('/api/assets?category=banco')).body.assets.some((a) => a.builtin));
 });
 
+test('ADMIN_RESET recupera o acesso do administrador pelas variáveis de ambiente', async () => {
+  const bootstrap = require('../src/lib/bootstrap');
+  const env = { ...process.env };
+  try {
+    // Senha curta: não cria nem altera nada.
+    Object.assign(process.env, { ADMIN_RESET: '1', ADMIN_EMAIL: 'Chefe@T.com', ADMIN_PASSWORD: 'curta' });
+    bootstrap();
+    assert.strictEqual(users.getAuthRecordByEmail('chefe@t.com'), undefined);
+    // Cria o administrador que não existia.
+    process.env.ADMIN_PASSWORD = 'senha-nova-1';
+    bootstrap();
+    const novo = users.getAuthRecordByEmail('chefe@t.com');
+    assert.ok(novo && novo.is_admin && novo.is_active);
+    await login('chefe@t.com', 'senha-nova-1');
+    // Redefine a senha de quem já existe (e reativa).
+    users.setActive(novo.id, false);
+    process.env.ADMIN_PASSWORD = 'senha-nova-2';
+    bootstrap();
+    await login('chefe@t.com', 'senha-nova-2');
+    // Sem ADMIN_RESET e com usuários no banco: não mexe em nada.
+    delete process.env.ADMIN_RESET;
+    process.env.ADMIN_PASSWORD = 'senha-nova-3';
+    bootstrap();
+    await login('chefe@t.com', 'senha-nova-2');
+  } finally {
+    process.env = env;
+  }
+});
+
 test('admin cria usuário com senha temporária e troca obrigatória', async () => {
   const page = await admin.agent.get('/admin/usuarios/novo');
   const csrf = page.text.match(/name="_csrf" value="([^"]+)"/)[1];
