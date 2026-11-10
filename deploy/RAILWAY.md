@@ -49,3 +49,13 @@ pessoa recebe um link (válido por 1 hora, uso único) para criar uma nova senha
 | `SMTP_PASS` | senha de app da conta (no Google/Microsoft, gere uma "senha de app") |
 | `SMTP_FROM` | `Estúdio PADAP <nao-responda@padapagronegocios.com.br>` |
 | `APP_URL` | endereço do sistema, ex.: `https://web-production-83f13.up.railway.app` (obrigatório em produção) |
+
+## Dados do produtor vindos do Portal do Produtor (opcional)
+
+No editor, **Formas → Dados → Dados do produtor (Portal)** busca produtores e propriedades no Portal.
+
+1. Gere uma chave: `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`
+2. No serviço do **Portal** no Railway: `ESTUDIO_API_TOKEN=<chave>`
+3. No serviço do **Estúdio**: `PORTAL_URL=<endereço do Portal>` e `PORTAL_API_TOKEN=<a mesma chave>`
+
+A integração é somente leitura e só entrega nome do produtor e propriedades (nome, município, UF, área).

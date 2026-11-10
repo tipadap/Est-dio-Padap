@@ -5,6 +5,7 @@ const config = require('../config');
 const presentations = require('../lib/presentations');
 const versions = require('../lib/versions');
 const prices = require('../lib/prices');
+const portal = require('../lib/portal');
 const { getPtax } = require('../lib/ptax');
 const assets = require('../lib/assets');
 const portfolio = require('../lib/portfolio');
@@ -189,6 +190,16 @@ router.get('/precos', async (req, res) => {
 
 router.put('/precos', requireAdmin, csrf.verify, (req, res) => {
   res.json(prices.save(req.body || {}, req.user.name || req.user.email));
+});
+
+// Produtores do Portal do Produtor (para slides de caso de campo)
+router.get('/portal/produtores', async (req, res) => {
+  if (!portal.isConfigured()) return res.status(503).json({ error: 'Integração com o Portal do Produtor ainda não configurada.' });
+  try {
+    return res.json({ produtores: await portal.searchProducers(req.query.q) });
+  } catch (err) {
+    return res.status(502).json({ error: err.message });
+  }
 });
 
 // Preferências (admin): imagem do login, banner da página inicial, foto de cada modelo.

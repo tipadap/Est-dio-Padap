@@ -221,3 +221,8 @@ html, body { height: 100%; overflow: hidden; }
 .data-grid .ser-head { display: flex; gap: 4px; align-items: center; }
 .data-grid input[type=color] { width: 30px; height: 30px; border: 0; padding: 0; background: none; flex: none; cursor: pointer; }
 .data-actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; }
+
+/* Busca de produtor (Portal) */
+.producers { display: grid; gap: 10px; max-height: 55vh; overflow: auto; }
+.producer { border: 1px solid var(--line); border-radius: 10px; padding: 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.producer strong { width: 100%; color: var(--teal-900); }

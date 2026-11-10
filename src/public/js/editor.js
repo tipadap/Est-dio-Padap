@@ -997,6 +997,74 @@ async function addMarketIndicators() {
   return undefined;
 }
 
+// ---- Dados do produtor (Portal do Produtor) ---------------------------------
+
+function openProducerPicker() {
+  const m = modal('Dados do produtor (Portal do Produtor)', { wide: true });
+  m.body.innerHTML = `<p class="muted" style="margin-top:0">Busque o produtor e escolha a propriedade: o bloco entra no slide com cliente, fazenda, município e área.</p>
+    <input class="text-input" type="search" placeholder="Nome do produtor…" style="max-width:360px;margin-bottom:12px">
+    <div class="producers"><div class="muted">Digite ao menos 2 letras.</div></div>`;
+  const input = m.body.querySelector('input');
+  const box = m.body.querySelector('.producers');
+  const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  let timer;
+  const search = async () => {
+    const q = input.value.trim();
+    if (q.length < 2) {
+      box.innerHTML = '<div class="muted">Digite ao menos 2 letras.</div>';
+      return;
+    }
+    box.innerHTML = '<div class="muted">Buscando…</div>';
+    try {
+      const { produtores } = await api('GET', `/api/portal/produtores?q=${encodeURIComponent(q)}`);
+      box.replaceChildren();
+      if (!produtores.length) box.innerHTML = '<div class="empty">Nenhum produtor encontrado.</div>';
+      for (const p of produtores) {
+        const card = document.createElement('div');
+        card.className = 'producer';
+        card.innerHTML = `<strong>${esc(p.nome)}</strong>`;
+        const props = p.propriedades.length ? p.propriedades : [{ nome: '', municipio: '', uf: '', area_ha: null }];
+        for (const pr of props) {
+          const b = document.createElement('button');
+          b.type = 'button';
+          b.className = 'btn btn-sm';
+          b.textContent = pr.nome ? `${pr.nome} — ${[pr.municipio, pr.uf].filter(Boolean).join('/')}${pr.area_ha ? ` · ${pr.area_ha.toLocaleString('pt-BR')} ha` : ''}` : 'Usar só o nome (sem propriedade cadastrada)';
+          b.addEventListener('click', () => {
+            m.close();
+            insertProducer(p, pr);
+          });
+          card.appendChild(b);
+        }
+        box.appendChild(card);
+      }
+    } catch (err) {
+      box.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
+    }
+  };
+  input.addEventListener('input', () => {
+    clearTimeout(timer);
+    timer = setTimeout(search, 300);
+  });
+  input.focus();
+}
+
+function insertProducer(p, pr) {
+  const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
+  const dark = isDarkBg();
+  const label = dark ? '#9BEA9F' : '#2E8A43';
+  const linhas = [['Cliente', p.nome]];
+  if (pr.nome) linhas.push(['Fazenda', pr.nome]);
+  const local = [pr.municipio, pr.uf].filter(Boolean).join(' (') + (pr.municipio && pr.uf ? ')' : '');
+  if (local) linhas.push(['Local', local]);
+  if (pr.area_ha) linhas.push(['Área', `${pr.area_ha.toLocaleString('pt-BR')} ha`]);
+  addElement({
+    id: uid(), type: 'text', x: 160, y: 300, w: 900, h: 110 * linhas.length,
+    html: linhas.map(([k, v]) => `<div><span style="font-size:20px;color:${label};font-weight:bold">${k.toUpperCase()}</span></div><div>${esc(v)}</div>`).join(''),
+    placeholder: 'Dados do produtor',
+    style: { fontFamily: 'Space Grotesk', fontSize: 38, color: dark ? '#FFFFFF' : BRAND.teal, align: 'left', valign: 'top', lineHeight: 1.3, bold: false },
+  });
+}
+
 function addTable() {
   addElement({
     id: uid(), type: 'table', x: 160, y: 300, w: 1600, h: 420,
@@ -1980,6 +2048,7 @@ const COMMANDS = {
       mi(m, 'Tabela', addTable, { icon: 'layout' });
       mi(m, 'Tabela de cotação (preços atuais)', addPriceTable, { icon: 'grid' });
       mi(m, 'Indicadores de mercado (dólar, ureia, MAP, KCl)', addMarketIndicators, { icon: 'globe' });
+      mi(m, 'Dados do produtor (Portal do Produtor)', openProducerPicker, { icon: 'users' });
       mhead(m, 'Inserir forma');
       const grid = document.createElement('div');
       grid.className = 'shape-grid';

@@ -207,6 +207,19 @@ test('preços: só admin grava, todos leem, valores validados', async () => {
   assert.strictEqual((await admin.agent.get('/admin/precos')).status, 200);
 });
 
+test('integração com o Portal: avisa quando não configurada', async () => {
+  const env = { ...process.env };
+  try {
+    delete process.env.PORTAL_URL;
+    const r = await ana.agent.get('/api/portal/produtores?q=jo');
+    assert.strictEqual(r.status, 503);
+    assert.match(r.body.error, /não configurada/);
+    assert.strictEqual((await request(app).get('/api/portal/produtores?q=jo')).status, 401);
+  } finally {
+    process.env = env;
+  }
+});
+
 test('gráfico e tabela: dados validados', () => {
   const d = cleanPresentation({
     slides: [{
