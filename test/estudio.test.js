@@ -73,6 +73,10 @@ test('JS/CSS sempre conferidos com o servidor (atualizações aparecem na hora)'
   }
   const page = await request(app).get('/login');
   assert.ok(page.text.includes('app.css?v='), 'CSS com ?v= do deploy');
+  // scripts com a versão no caminho; imports relativos herdam a versão
+  const m = page.text.match(/src="(\/app\/[^"]+\/)shell\.js"/);
+  assert.ok(m, 'script com versão no caminho');
+  for (const f of ['shell.js', 'render.js', 'templates.js', 'modelos-padap.js']) assert.strictEqual((await request(app).get(m[1] + f)).status, 200, f);
 });
 
 test('senha errada não entra', async () => {

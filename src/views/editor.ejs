@@ -112,6 +112,6 @@
 </div>
 <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
 <script type="application/json" id="boot"><%- json(boot) %></script>
-<script type="module" src="/static/js/editor.js?v=<%= build %>"></script>
+<script type="module" src="/app/<%= build %>/editor.js"></script>
 </body>
 </html>

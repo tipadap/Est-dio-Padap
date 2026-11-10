@@ -54,6 +54,13 @@ const staticOpts = {
   },
 };
 app.use('/static', express.static(config.paths.public, staticOpts));
+// Scripts com a versão do deploy NO CAMINHO (/app/<build>/editor.js): os imports
+// relativos (./templates.js etc.) herdam a versão, então o navegador nunca mistura
+// arquivo novo com cópia antiga guardada em cache. Endereço muda a cada deploy → cache longo é seguro.
+app.use(
+  '/app/:build',
+  express.static(require('path').join(config.paths.public, 'js'), { maxAge: config.isProd ? '365d' : 0, immutable: config.isProd })
+);
 app.use('/vendor', express.static(config.paths.vendor, cache));
 app.use('/uploads', express.static(config.paths.uploads, cache));
 
