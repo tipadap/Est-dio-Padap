@@ -4,7 +4,7 @@
     "kind": "produto",
     "name": "YaraBasa",
     "brand": "Yara",
-    "description": "7 nutrientes (N, P, K Mg, Ca, S, B, Mn e Zn) em um único grânulo para adubação de base."
+    "description": "7 nutrientes (N, P, K, Mg, Ca, S, B, Mn e Zn) em um único grânulo para adubação de base."
   },
   {
     "file": "produto-yara-liva.webp",
@@ -18,7 +18,7 @@
     "kind": "produto",
     "name": "YaraMila",
     "brand": "Yara",
-    "description": "7 nutrientes (N, P, K Mg, S, B e Zn) em um único grânulo - 3 fases de liberação de fósforo e 15% de sulfato de potássio."
+    "description": "7 nutrientes (N, P, K, Mg, S, B e Zn) em um único grânulo - 3 fases de liberação de fósforo e 15% de sulfato de potássio."
   },
   {
     "file": "produto-yara-rega.webp",
@@ -32,7 +32,7 @@
     "kind": "produto",
     "name": "YaraMila Complex",
     "brand": "Yara",
-    "description": "7 nutrientes (N, P, K, Mg, S, B, Fe, Mn) em um único grânulo. 3 fases de liberação de fósforo e de sulfato de potássio."
+    "description": "7 nutrientes (N, P, K, Mg, S, B, Fe e Mn) em um único grânulo. 3 fases de liberação de fósforo e de sulfato de potássio."
   },
   {
     "file": "produto-amazinc.webp",
@@ -46,14 +46,14 @@
     "kind": "produto",
     "name": "Biotrac",
     "brand": "YaraVita",
-    "description": "Bioestmulante a base de Ascophyllum nodosum (117g/l), B (13g/l), Zn (13 g/l), N (65 g/l) e K (27 g/l)."
+    "description": "Bioestimulante à base de Ascophyllum nodosum (117 g/l), B (13 g/l), Zn (13 g/l), N (65 g/l) e K (27 g/l)."
   },
   {
     "file": "produto-bortrac.webp",
     "kind": "produto",
     "name": "Bortrac",
     "brand": "YaraVita",
-    "description": "Fertilizante líquido concentrado de Boro MEA (150 G/L)."
+    "description": "Fertilizante líquido concentrado de Boro MEA (150 g/l)."
   },
   {
     "file": "produto-coptrac.webp",
@@ -67,28 +67,28 @@
     "kind": "produto",
     "name": "Folicare",
     "brand": "YaraVita",
-    "description": "Fertilizante líquido voltado para enchimento a base de N (120 g/l), K (390 g/l), S (18 g/l) e Mg (28g/l)."
+    "description": "Fertilizante líquido voltado para enchimento à base de N (120 g/l), K (390 g/l), S (18 g/l) e Mg (28 g/l)."
   },
   {
     "file": "produto-glytrel-mnp.webp",
     "kind": "produto",
     "name": "Glytrel MNP",
     "brand": "YaraVita",
-    "description": "Fertilizante líquido para aplicações em soja junto com glifosato a base de P (87 g/l) e Mn (87 g/l)."
+    "description": "Fertilizante líquido para aplicações em soja junto com glifosato à base de P (87 g/l) e Mn (87 g/l)."
   },
   {
     "file": "produto-yara-cafe.webp",
     "kind": "produto",
     "name": "YaraVita Café",
     "brand": "YaraVita",
-    "description": "YaraVita CAFÉ é o fertilizante foliar de N (69g/l), Mg (70g/l) Boro (70g/l), Zinco (140 g/l) para aplicação foliar ou diretamente no solo."
+    "description": "YaraVita CAFÉ é o fertilizante foliar de N (69 g/l), Mg (70 g/l), Boro (70 g/l), Zinco (140 g/l) para aplicação foliar ou diretamente no solo."
   },
   {
     "file": "produto-magtrac.webp",
     "kind": "produto",
     "name": "Magtrac",
     "brand": "YaraVita",
-    "description": "Bioestimulante a base de Mg (79,8 g/l) e Ascophyllum nodosum."
+    "description": "Bioestimulante à base de Mg (79,8 g/l) e Ascophyllum nodosum."
   },
   {
     "file": "produto-mancozin.webp",
@@ -123,35 +123,35 @@
     "kind": "produto",
     "name": "Quebec",
     "brand": "Goplan",
-    "description": "10% Ecklonia Maxima + 17% Carbono Orgânicos + 50% aminoácidos + micronutrientes que auxiliam na tolerância da cultura ao estresse e bioestimulam a planta a florescer."
+    "description": "10% Ecklonia Maxima + 17% Carbono Orgânico + 50% aminoácidos + micronutrientes que auxiliam na tolerância da cultura ao estresse e bioestimulam a planta a florescer."
   },
   {
     "file": "produto-sysco.webp",
     "kind": "produto",
     "name": "Sysco",
     "brand": "Goplan",
-    "description": "Indutor de resistência a base de Cobre."
+    "description": "Indutor de resistência à base de Cobre."
   },
   {
     "file": "produto-shelby.webp",
     "kind": "produto",
     "name": "Shelby",
     "brand": "Goplan",
-    "description": "Nematicida e Fungicida à base de bactérias (Bacillus subtilis, Bacillus velezensis, Bacillus pumilus) e fungos (Trichoderma harzianum)"
+    "description": "Nematicida e Fungicida à base de bactérias (Bacillus subtilis, Bacillus velezensis, Bacillus pumilus) e fungos (Trichoderma harzianum)."
   },
   {
     "file": "produto-kopi.webp",
     "kind": "produto",
     "name": "Kopi",
     "brand": "Goplan",
-    "description": "Complexo de nutrientes a base de sais B, Zn, Mn, K2O, S, Cu e Mg."
+    "description": "Complexo de nutrientes à base de sais B, Zn, Mn, K2O, S, Cu e Mg."
   },
   {
     "file": "produto-maggo.webp",
     "kind": "produto",
     "name": "Maggo",
     "brand": "Goplan",
-    "description": "Fertilizante líquido a base de Mg 8% + Aminoácidos 3%."
+    "description": "Fertilizante líquido à base de Mg 8% + Aminoácidos 3%."
   },
   {
     "file": "produto-touche.webp",
@@ -165,14 +165,14 @@
     "kind": "produto",
     "name": "Blackgold",
     "brand": "Fortgreen",
-    "description": "Condicionador de solo com alto teor de substâncias húmicas e fúlvicas e Ph ácido."
+    "description": "Condicionador de solo com alto teor de substâncias húmicas e fúlvicas e pH ácido."
   },
   {
     "file": "produto-li-700.webp",
     "kind": "produto",
     "name": "LI 700",
     "brand": "Fortgreen",
-    "description": "Adjuvante com Ph tamponante, indicado para pulverização de herbicidas, eficiência anti-deriva e número 01 em vendas no mundo."
+    "description": "Adjuvante com pH tamponante, indicado para pulverização de herbicidas, eficiência antideriva e número 01 em vendas no mundo."
   },
   {
     "file": "produto-router.webp",
@@ -186,7 +186,7 @@
     "kind": "produto",
     "name": "Curative",
     "brand": "Fortgreen",
-    "description": "Tecnologia para proteção de plantas a base de fosfito de potássio, cobre e níquel. Possui fósforo nutricional, pótassio, magnésio e enxofre, para fornecer energia para as plantas."
+    "description": "Tecnologia para proteção de plantas à base de fosfito de potássio, cobre e níquel. Possui fósforo nutricional, potássio, magnésio e enxofre, para fornecer energia para as plantas."
   },
   {
     "file": "produto-drive.webp",
@@ -207,14 +207,14 @@
     "kind": "produto",
     "name": "Salut",
     "brand": "Santa Clara Agrociência",
-    "description": "Produto de contato a base de ácido fosforoso, fosfito de cobre e agentes sanitizantes hospitalares que além de atingir fungos e bactérias, promove a resistência de plantas."
+    "description": "Produto de contato à base de ácido fosforoso, fosfito de cobre e agentes sanitizantes hospitalares que além de atingir fungos e bactérias, promove a resistência de plantas."
   },
   {
     "file": "produto-sulfeto-sk.webp",
     "kind": "produto",
     "name": "Sulfeto SK",
     "brand": "Santa Clara Agrociência",
-    "description": "Produto a base de Sulfeto de Potássio, atua na diferenciação do alho, atua no enchimento das culturas e também é desalojante de pragas. S (486,0 g/l), K (486,0 g/l)"
+    "description": "Produto à base de Sulfeto de Potássio, atua na diferenciação do alho, atua no enchimento das culturas e também é desalojante de pragas. S (486,0 g/l), K (486,0 g/l)."
   },
   {
     "file": "produto-matriz-g.webp",
@@ -242,21 +242,21 @@
     "kind": "produto",
     "name": "Bunema",
     "brand": "Eastman",
-    "description": "Controle efetivo de nematóides, doenças de solo, plantas daninhas e formigas cortadeiras, em uma única aplicação e sem deixar resíduo."
+    "description": "Controle efetivo de nematoides, doenças de solo, plantas daninhas e formigas cortadeiras, em uma única aplicação e sem deixar resíduo."
   },
   {
     "file": "produto-granmag.webp",
     "kind": "produto",
     "name": "Granmag",
     "brand": "Microsolo",
-    "description": "Fertilizantes granulados com micronutrientes combinados em um único grânulo a base de B, Mg, Cu, Mn, S e Zn."
+    "description": "Fertilizantes granulados com micronutrientes combinados em um único grânulo à base de B, Mg, Cu, Mn, S e Zn."
   },
   {
     "file": "produto-kfort.webp",
     "kind": "produto",
     "name": "Kfort",
     "brand": "Verde Agritech",
-    "description": "Fertilizante a base de potássio, livre de cloro e fonte silício, magnésio e manganês."
+    "description": "Fertilizante à base de potássio, livre de cloro e fonte de silício, magnésio e manganês."
   },
   {
     "file": "produto-milheto.jpg",
