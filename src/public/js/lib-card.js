@@ -20,11 +20,14 @@ export function presCard(p, { team = false, onChange = () => {} } = {}) {
   if (p.firstSlide) mountThumb(card.querySelector('.thumb'), p.firstSlide);
 
   const actions = card.querySelector('.actions');
+  // Ações discretas: só ícone, com o nome na dica (title) e para leitores de tela.
   const btn = (label, icon, fn, cls = '') => {
     const b = document.createElement('button');
     b.type = 'button';
-    b.className = `btn btn-sm ${cls}`;
-    b.innerHTML = `${ic(icon)} ${label}`;
+    b.className = `act ${cls}`;
+    b.title = label;
+    b.setAttribute('aria-label', label);
+    b.innerHTML = ic(icon);
     b.addEventListener('click', fn);
     actions.appendChild(b);
   };
@@ -37,7 +40,6 @@ export function presCard(p, { team = false, onChange = () => {} } = {}) {
     });
     return card;
   }
-  btn('Abrir', 'edit', () => (location.href = href));
   btn('Renomear', 'textBox', async () => {
     const title = prompt('Novo nome da apresentação:', p.title);
     if (!title || title === p.title) return;
@@ -66,6 +68,6 @@ export function presCard(p, { team = false, onChange = () => {} } = {}) {
     } catch (e) {
       toast(e.message, 'error');
     }
-  }, 'btn-danger');
+  }, 'danger');
   return card;
 }

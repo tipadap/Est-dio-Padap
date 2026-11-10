@@ -3,47 +3,14 @@
 <div class="login">
   <section class="login-art" aria-hidden="true">
     <div class="photo" style="background-image:url('<%= loginBg || '/static/img/login-fundo.jpg' %>')"></div>
-    <%# Grafismo PADAP (Brandbook p.33): folhas translúcidas e contornos em verde. %>
+    <%# Grafismo PADAP mínimo: um contorno fino de folha (Brandbook p.33). %>
     <svg class="grafismo" viewBox="0 0 700 1000" preserveAspectRatio="xMinYMin slice">
-      <defs>
-        <linearGradient id="lgFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3DFF55" stop-opacity=".55"/><stop offset="1" stop-color="#1DBD2C" stop-opacity=".08"/>
-        </linearGradient>
-        <linearGradient id="lgGlass" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="#FFFFFF" stop-opacity=".16"/><stop offset="1" stop-color="#FFFFFF" stop-opacity=".02"/>
-        </linearGradient>
-        <linearGradient id="lgBig" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#1DBD2C" stop-opacity=".05"/><stop offset=".6" stop-color="#3DFF55" stop-opacity=".22"/><stop offset="1" stop-color="#9DFFAA" stop-opacity=".45"/>
-        </linearGradient>
-      </defs>
-      <!-- folha no topo -->
-      <path d="M85 -10 H280 V120 H200 A115 115 0 0 1 85 5 Z" fill="url(#lgFill)"/>
-      <path d="M270 120 H490 A240 240 0 0 1 730 360 V480" fill="none" stroke="#3DFF55" stroke-width="2.5"/>
-      <!-- folha grande que emoldura o logo -->
-      <path d="M270 120 H490 A240 240 0 0 1 730 360 V470 H590 A320 320 0 0 1 270 150 Z" fill="url(#lgBig)"/>
-      <!-- painéis de vidro à esquerda -->
-      <path d="M-5 330 H25 A80 80 0 0 1 105 410 V1010 H-5 Z" fill="url(#lgGlass)" stroke="#5CFF70" stroke-opacity=".7" stroke-width="2"/>
-      <path d="M-5 460 H110 A155 155 0 0 1 265 615 V1010 H-5 Z" fill="url(#lgGlass)" stroke="#5CFF70" stroke-opacity=".65" stroke-width="2"/>
-      <path d="M-5 600 H95 A140 140 0 0 1 235 740 V1010 H-5 Z" fill="url(#lgGlass)" stroke="#5CFF70" stroke-opacity=".6" stroke-width="2"/>
-      <path d="M235 740 H420 A165 165 0 0 1 585 905 V1010 H235 Z" fill="url(#lgGlass)" stroke="#5CFF70" stroke-opacity=".6" stroke-width="2"/>
-      <path d="M430 950 H600 A130 130 0 0 1 730 1080" fill="none" stroke="#5CFF70" stroke-opacity=".7" stroke-width="2"/>
+      <path d="M70 120 H470 A240 240 0 0 1 710 360" fill="none" stroke="#3DFF55" stroke-opacity=".55" stroke-width="1.5"/>
     </svg>
     <div class="login-brand"><img src="/static/img/padap-logo-branco.png" alt=""></div>
   </section>
 
   <section class="login-panel">
-    <svg class="panel-grafismo" viewBox="0 0 700 110" preserveAspectRatio="xMaxYMin slice" aria-hidden="true">
-      <defs>
-        <linearGradient id="pgFill" x1="0" y1="0" x2="1" y2="1">
-          <stop offset="0" stop-color="#3DFF55" stop-opacity=".85"/><stop offset="1" stop-color="#0F4C4F" stop-opacity=".2"/>
-        </linearGradient>
-      </defs>
-      <path d="M215 110 A125 125 0 0 1 340 -15 H700 V110 Z" fill="#0F4C4F"/>
-      <path d="M370 110 A105 105 0 0 1 475 5 H560 V110 Z" fill="url(#pgFill)"/>
-      <path d="M470 110 A95 95 0 0 1 565 15 H700" fill="none" stroke="#3DFF55" stroke-width="2"/>
-      <path d="M620 110 V80 A60 60 0 0 1 680 20 H700" fill="none" stroke="#3DFF55" stroke-width="2"/>
-      <path d="M625 0 V110" stroke="#3DFF55" stroke-opacity=".5" stroke-width="2"/>
-    </svg>
     <div class="login-sheet">
       <form class="login-card" method="post" action="/login" novalidate>
         <p class="hello">Bem-vindo ao</p>
