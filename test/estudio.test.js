@@ -291,7 +291,7 @@ test('imagens: só admin envia ao Banco; usuário envia às próprias', async ()
 
   const banco = await admin.agent.post('/api/assets').set('x-csrf-token', admin.token).field('category', 'banco').attach('image', PNG_1PX, { filename: 'lavoura.png', contentType: 'image/png' });
   assert.strictEqual(banco.status, 201);
-  assert.strictEqual((await ana.agent.get('/api/assets?category=banco')).body.assets.length, 1);
+  assert.strictEqual((await ana.agent.get('/api/assets?category=banco')).body.assets.filter((a) => !a.builtin).length, 1);
 
   const bad = await admin.agent.post('/api/assets').set('x-csrf-token', admin.token).field('category', 'banco').attach('image', Buffer.from('<svg/>'), { filename: 'x.svg', contentType: 'image/svg+xml' });
   assert.strictEqual(bad.status, 400);
@@ -322,8 +322,24 @@ test('Portfólio 2026 embutido aparece no Portfólio e os arquivos existem', asy
   assert.strictEqual(d.slides[0].elements[0].src, yara.url);
   const s = await admin.agent.post('/api/settings').set('x-csrf-token', admin.token).send({ key: 'tpl:mercado', value: yara.url });
   assert.strictEqual(s.status, 200);
-  // Não aparece no Banco de imagens nem pode ser apagado como upload.
-  assert.ok(!(await ana.agent.get('/api/assets?category=banco')).body.assets.some((a) => a.builtin));
+  // Não aparece no Banco de imagens.
+  assert.ok(!(await ana.agent.get('/api/assets?category=banco')).body.assets.some((a) => a.url === yara.url));
+});
+
+test('Banco de imagens embutido: ~50 fotos com tema, miniatura e arquivos presentes', async () => {
+  const res = await ana.agent.get('/api/assets?category=banco');
+  const builtin = res.body.assets.filter((a) => a.builtin);
+  assert.ok(builtin.length >= 50, `fotos do banco: ${builtin.length}`);
+  for (const a of builtin) {
+    assert.ok(a.theme && a.title, a.url);
+    for (const u of [a.url, a.thumb]) assert.ok(fs.existsSync(path.join(__dirname, '..', 'src', 'public', u.replace('/static/', ''))), u);
+  }
+  // Pode ir para um slide e ser usada como fundo do login; não pode ser apagada.
+  const foto = builtin[0];
+  assert.strictEqual(cleanPresentation({ slides: [{ elements: [{ type: 'image', src: foto.url, x: 0, y: 0, w: 10, h: 10 }] }] }).slides[0].elements[0].src, foto.url);
+  assert.strictEqual((await admin.agent.post('/api/settings').set('x-csrf-token', admin.token).send({ key: 'home_banner', value: foto.url })).status, 200);
+  assert.notStrictEqual((await admin.agent.delete(`/api/assets/${foto.id}`).set('x-csrf-token', admin.token)).status, 200);
+  await admin.agent.post('/api/settings').set('x-csrf-token', admin.token).send({ key: 'home_banner', value: null });
 });
 
 test('ADMIN_RESET recupera o acesso do administrador pelas variáveis de ambiente', async () => {

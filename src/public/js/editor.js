@@ -1673,12 +1673,15 @@ function openPicker(category, onPick = insertImage) {
   filters.innerHTML = `
     <select class="text-input" data-f="kind" aria-label="Tipo"><option value="">Tudo</option><option value="produto">Produtos</option><option value="logo">Logos das marcas</option><option value="pagina">Páginas do portfólio</option></select>
     <select class="text-input" data-f="brand" aria-label="Marca"><option value="">Todas as marcas</option></select>
-    <label class="check"><input type="checkbox" data-f="withText" checked> Inserir produto com nome e descrição</label>`;
+    <label class="check"><input type="checkbox" data-f="withText" checked> Inserir produto com nome e descrição</label>
+    <select class="text-input" data-f="theme" aria-label="Tema"><option value="">Todos os temas</option></select>`;
   const fKind = filters.querySelector('[data-f=kind]');
   const fBrand = filters.querySelector('[data-f=brand]');
   const fText = filters.querySelector('[data-f=withText]');
   fKind.addEventListener('change', () => draw());
   fBrand.addEventListener('change', () => draw());
+  const fTheme = filters.querySelector('[data-f=theme]');
+  fTheme.addEventListener('change', () => draw());
   const tabs = m.body.querySelector('.picker-tabs');
   const grid = m.body.querySelector('.picker-grid');
   let cat = category;
@@ -1715,13 +1718,17 @@ function openPicker(category, onPick = insertImage) {
     const q = search.value.trim().toLowerCase();
     grid.replaceChildren();
     const isPf = cat === 'portfolio';
-    filters.hidden = !isPf;
+    const themes = cat === 'banco' && items.some((a) => a.theme);
+    filters.hidden = !isPf && !themes;
+    [fKind, fBrand, fText.parentElement].forEach((el) => (el.hidden = !isPf));
+    fTheme.hidden = !themes;
     grid.classList.toggle('contain', isPf);
     const list = items.filter(
       (a) =>
         (!q || `${a.title} ${a.description || ''}`.toLowerCase().includes(q)) &&
         (!isPf || !fKind.value || (a.kind || 'produto') === fKind.value) &&
-        (!isPf || !fBrand.value || a.brand === fBrand.value)
+        (!isPf || !fBrand.value || a.brand === fBrand.value) &&
+        (!themes || !fTheme.value || a.theme === fTheme.value)
     );
     if (!list.length) {
       const msg =
@@ -1735,7 +1742,7 @@ function openPicker(category, onPick = insertImage) {
       const b = document.createElement('button');
       b.type = 'button';
       b.innerHTML = '<img loading="lazy" alt=""><span></span>';
-      b.querySelector('img').src = a.url;
+      b.querySelector('img').src = a.thumb || a.url;
       b.querySelector('span').textContent = a.title || 'Sem título';
       if (a.description) b.title = `${a.name}: ${a.description}`;
       b.addEventListener('click', () => {
@@ -1753,6 +1760,8 @@ function openPicker(category, onPick = insertImage) {
       items = (await api('GET', `/api/assets?category=${cat}`)).assets;
       const brands = [...new Set(items.map((a) => a.brand).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'pt-BR'));
       fBrand.replaceChildren(new Option('Todas as marcas', ''), ...brands.map((b) => new Option(b, b)));
+      const themes = [...new Set(items.map((a) => a.theme).filter(Boolean))];
+      fTheme.replaceChildren(new Option('Todos os temas', ''), ...themes.map((t) => new Option(t, t)));
     } catch (e) {
       items = [];
       toast(e.message, 'error');

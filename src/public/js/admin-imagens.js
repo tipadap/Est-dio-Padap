@@ -32,14 +32,16 @@ function draw() {
         <select class="text-input" aria-label="Usar esta imagem como"><option value="">Usar como…</option></select>
         <button class="btn btn-sm btn-danger" type="button">Excluir</button>
       </div>`;
-    card.querySelector('img').src = a.url;
+    card.querySelector('img').src = a.thumb || a.url;
     const title = card.querySelector('input');
     title.value = a.title;
     if (a.builtin) {
       title.readOnly = true;
-      title.title = 'Item do Portfólio 2026 (embutido no sistema)';
+      const tag = a.category === 'banco' ? `Banco PADAP · ${a.theme}` : 'Portfólio 2026';
+      title.title = `${tag} (embutido no sistema)`;
       card.querySelector('.btn-danger').hidden = true;
-      card.querySelector('.tags').insertAdjacentHTML('beforebegin', '<span class="badge" style="justify-self:start">Portfólio 2026</span>');
+      card.querySelector('.tags').insertAdjacentHTML('beforebegin', '<span class="badge" style="justify-self:start"></span>');
+      card.querySelector('.body > .badge').textContent = tag;
     }
     title.addEventListener('change', async () => {
       try {

@@ -9,6 +9,7 @@ const portal = require('../lib/portal');
 const { getPtax } = require('../lib/ptax');
 const assets = require('../lib/assets');
 const portfolio = require('../lib/portfolio');
+const banco = require('../lib/banco');
 const settings = require('../lib/settings');
 const { cleanPresentation, cleanTitle } = require('../lib/sanitize');
 const { handleImage, discardUpload } = require('../lib/upload');
@@ -131,8 +132,9 @@ const CATEGORIES = ['banco', 'portfolio', 'user'];
 router.get('/assets', (req, res) => {
   const category = CATEGORIES.includes(req.query.category) ? req.query.category : 'banco';
   const list = assets.list(category, req.user.id);
-  // Portfólio: imagens enviadas pelo admin + o Portfólio 2026 embutido no sistema.
-  res.json({ assets: category === 'portfolio' ? list.concat(portfolio.list()) : list });
+  // Banco e Portfólio: imagens enviadas pelo admin + as que já vêm embutidas no sistema.
+  const builtin = category === 'portfolio' ? portfolio.list() : category === 'banco' ? banco.list() : [];
+  res.json({ assets: list.concat(builtin) });
 });
 
 // Banco e Portfólio: só admin. "user": qualquer usuário (imagens próprias).
@@ -210,6 +212,7 @@ router.post('/settings', requireAdmin, csrf.verify, (req, res) => {
     const ok =
       typeof value === 'string' &&
       (portfolio.hasUrl(value) ||
+        banco.hasUrl(value) ||
         (value.startsWith('/uploads/') && assets.list('banco').concat(assets.list('portfolio')).some((a) => a.url === value)));
     if (!ok) return bad(res, 'Escolha uma imagem do Banco de imagens ou do Portfólio.');
   }

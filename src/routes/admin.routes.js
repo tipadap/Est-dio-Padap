@@ -4,6 +4,7 @@ const express = require('express');
 const users = require('../lib/users');
 const assets = require('../lib/assets');
 const portfolio = require('../lib/portfolio');
+const banco = require('../lib/banco');
 const settings = require('../lib/settings');
 const password = require('../lib/password');
 const csrf = require('../middleware/csrf');
@@ -125,7 +126,7 @@ router.get('/imagens', (req, res) => {
     title: 'Imagens',
     active: 'imagens',
     boot: {
-      banco: assets.list('banco'),
+      banco: assets.list('banco').concat(banco.list()),
       portfolio: assets.list('portfolio').concat(portfolio.list()),
       settings: settings.all(),
       templateIds: settings.TEMPLATE_IDS,
