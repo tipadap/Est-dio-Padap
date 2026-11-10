@@ -4,6 +4,7 @@ import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api
 import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER, buildPresentation } from './templates.js';
 import { present } from './present.js';
 import { exportPptx } from './pptx.js';
+import { exportPdf } from './pdf.js';
 
 const boot = readBoot();
 // Rascunho (/editor/novo): monta o modelo aqui; só vira registro no primeiro salvamento.
@@ -1307,6 +1308,18 @@ async function doExportPptx() {
   }
 }
 
+async function doExportPdf() {
+  await flush();
+  toast('Gerando o PDF…');
+  try {
+    await exportPdf(pres.title, slides(), (i, n) => setStatus(`Gerando PDF: slide ${i} de ${n}…`));
+    toast('PDF gerado.');
+  } catch (err) {
+    toast(err.message, 'error');
+  }
+  setStatus(pres.id ? 'Todas as alterações foram salvas' : 'Rascunho — será salvo na primeira edição');
+}
+
 async function openPrint(pdf) {
   if (!(await ensureSaved())) return;
   window.open(`/imprimir/${pres.id}?auto=1${pdf ? '&pdf=1' : ''}`, '_blank');
@@ -1355,7 +1368,7 @@ const COMMANDS = {
   export: (btn) =>
     showMenu(btn, (m) => {
       mi(m, 'PowerPoint (.pptx)', doExportPptx, { icon: 'download' });
-      mi(m, 'PDF', () => openPrint(true), { icon: 'download' });
+      mi(m, 'PDF', doExportPdf, { icon: 'download' });
       msep(m);
       mi(m, 'Salvar (Ctrl+S)', saveNow, { icon: 'save' });
       mi(m, 'Salvar como… (fazer uma cópia)', saveAs, { icon: 'saveAs' });

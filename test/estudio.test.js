@@ -73,6 +73,9 @@ test('JS/CSS sempre conferidos com o servidor (atualizações aparecem na hora)'
   }
   const page = await request(app).get('/login');
   assert.ok(page.text.includes('app.css?v='), 'CSS com ?v= do deploy');
+  // bibliotecas de exportação disponíveis (PowerPoint e PDF)
+  assert.strictEqual((await request(app).get('/vendor/pptxgen.bundle.js')).status, 200);
+  assert.strictEqual((await request(app).get('/vendor-pdf/jspdf.umd.min.js')).status, 200);
   // scripts com a versão no caminho; imports relativos herdam a versão
   const m = page.text.match(/src="(\/app\/[^"]+\/)shell\.js"/);
   assert.ok(m, 'script com versão no caminho');

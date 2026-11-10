@@ -62,6 +62,7 @@ app.use(
   express.static(require('path').join(config.paths.public, 'js'), { maxAge: config.isProd ? '365d' : 0, immutable: config.isProd })
 );
 app.use('/vendor', express.static(config.paths.vendor, cache));
+app.use('/vendor-pdf', express.static(require('path').join(config.root, 'node_modules', 'jspdf', 'dist'), cache));
 app.use('/uploads', express.static(config.paths.uploads, cache));
 
 // Mesmo conjunto de ícones das views, como módulo ES para o navegador.
