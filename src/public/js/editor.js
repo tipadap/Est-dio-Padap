@@ -547,6 +547,8 @@ stage.addEventListener('dblclick', (e) => {
   const el = findEl(node.dataset.id);
   if (el.type === 'text') enterEdit(el.id, true);
   else if (el.type === 'image') openPicker('banco', (url) => setImage(el, url));
+  else if (el.type === 'chart') openChartEditor(el);
+  else if (el.type === 'table') openTableEditor(el);
 });
 
 new ResizeObserver(() => S.zoom === 'fit' && applyZoom()).observe(scroller);
@@ -925,6 +927,242 @@ async function insertProduct(url, asset) {
   S.sel = img.id;
   drawSelection();
   commit();
+}
+
+// ---- Gráficos e tabelas ------------------------------------------------------
+
+const SERIES_COLORS = ['#1DBD2C', '#0F4C4F', '#9BB7BD', '#F2A33A', '#5BC0EB', '#7D3C98'];
+
+function isDarkBg() {
+  const bg = (curSlide().bg || '#FFFFFF').replace('#', '');
+  return (0.299 * parseInt(bg.slice(0, 2), 16) + 0.587 * parseInt(bg.slice(2, 4), 16) + 0.114 * parseInt(bg.slice(4, 6), 16)) / 255 < 0.5;
+}
+
+function addChart(chartType) {
+  const dark = isDarkBg();
+  const el = {
+    id: uid(), type: 'chart', chartType, x: 360, y: 260, w: 1200, h: 640, title: '',
+    categories: ['Safra 23/24', 'Safra 24/25', 'Safra 25/26'],
+    series: [
+      { name: 'Testemunha', color: dark ? '#9BB7BD' : '#B8C7CB', values: [62, 65, 63] },
+      { name: 'Programa PADAP', color: '#1DBD2C', values: [71, 76, 79] },
+    ],
+    showValues: true, showLegend: true, textColor: dark ? '#FFFFFF' : '#0F252F', gridColor: dark ? '#2C5A5E' : '#D9E2E6',
+  };
+  addElement(el);
+  openChartEditor(el);
+}
+
+function addTable() {
+  addElement({
+    id: uid(), type: 'table', x: 160, y: 300, w: 1600, h: 420,
+    rows: [['Produto', 'Marca', 'Embalagem', 'Preço (R$)'], ['', '', '', ''], ['', '', '', ''], ['', '', '', '']],
+    colWidths: [0.34, 0.22, 0.24, 0.2], align: ['left', 'left', 'left', 'right'], header: true, fontSize: 26,
+  });
+  openTableEditor(selEl());
+}
+
+function cellInput(value, onInput, attrs = '') {
+  const i = document.createElement('input');
+  i.className = 'text-input';
+  i.value = value;
+  if (attrs) i.setAttribute('inputmode', attrs);
+  i.addEventListener('input', () => onInput(i.value));
+  return i;
+}
+
+function openChartEditor(el) {
+  const work = clone(el);
+  const m = modal('Dados do gráfico', { wide: true });
+  m.body.innerHTML = `<div class="data-opts">
+      <label>Tipo <select class="text-input" data-o="type"><option value="bar">Barras</option><option value="line">Linhas</option></select></label>
+      <label style="flex:1">Título <input class="text-input" data-o="title" placeholder="(opcional)"></label>
+      <label class="check"><input type="checkbox" data-o="values"> Mostrar valores</label>
+      <label class="check"><input type="checkbox" data-o="legend"> Mostrar legenda</label>
+    </div>
+    <div class="data-grid-wrap"><table class="data-grid"></table></div>
+    <div class="data-actions">
+      <button class="btn btn-sm" type="button" data-a="addCat">+ Categoria (linha)</button>
+      <button class="btn btn-sm" type="button" data-a="addSer">+ Série (coluna)</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-sm" type="button" data-a="cancel">Cancelar</button>
+      <button class="btn btn-sm btn-primary" type="button" data-a="ok">Aplicar</button>
+    </div>`;
+  const q = (s) => m.body.querySelector(s);
+  q('[data-o=type]').value = work.chartType;
+  q('[data-o=title]').value = work.title || '';
+  q('[data-o=values]').checked = work.showValues !== false;
+  q('[data-o=legend]').checked = work.showLegend !== false;
+  const grid = q('.data-grid');
+  const draw = () => {
+    grid.replaceChildren();
+    const head = grid.insertRow();
+    head.insertCell().textContent = 'Categoria';
+    work.series.forEach((s, si) => {
+      const td = head.insertCell();
+      const wrap = document.createElement('div');
+      wrap.className = 'ser-head';
+      const color = document.createElement('input');
+      color.type = 'color';
+      color.value = s.color;
+      color.addEventListener('input', () => (s.color = color.value.toUpperCase()));
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'icon-btn';
+      del.title = 'Remover série';
+      del.innerHTML = ic('x');
+      del.addEventListener('click', () => {
+        if (work.series.length > 1) work.series.splice(si, 1);
+        draw();
+      });
+      wrap.append(color, cellInput(s.name, (v) => (s.name = v)), del);
+      td.appendChild(wrap);
+    });
+    work.categories.forEach((c, ci) => {
+      const tr = grid.insertRow();
+      const td0 = tr.insertCell();
+      const wrap = document.createElement('div');
+      wrap.className = 'ser-head';
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'icon-btn';
+      del.title = 'Remover categoria';
+      del.innerHTML = ic('x');
+      del.addEventListener('click', () => {
+        if (work.categories.length > 1) {
+          work.categories.splice(ci, 1);
+          work.series.forEach((s) => s.values.splice(ci, 1));
+        }
+        draw();
+      });
+      wrap.append(cellInput(c, (v) => (work.categories[ci] = v)), del);
+      td0.appendChild(wrap);
+      work.series.forEach((s) => {
+        tr.insertCell().appendChild(cellInput(String(s.values[ci] ?? 0).replace('.', ','), (v) => (s.values[ci] = Number(v.replace(/\./g, '').replace(',', '.')) || 0), 'decimal'));
+      });
+    });
+  };
+  draw();
+  m.body.addEventListener('click', (ev) => {
+    const a = ev.target.closest('[data-a]')?.dataset.a;
+    if (a === 'addCat') {
+      work.categories.push(`Item ${work.categories.length + 1}`);
+      work.series.forEach((s) => s.values.push(0));
+      draw();
+    } else if (a === 'addSer') {
+      work.series.push({ name: `Série ${work.series.length + 1}`, color: SERIES_COLORS[work.series.length % SERIES_COLORS.length], values: work.categories.map(() => 0) });
+      draw();
+    } else if (a === 'cancel') m.close();
+    else if (a === 'ok') {
+      Object.assign(el, work, {
+        chartType: q('[data-o=type]').value,
+        title: q('[data-o=title]').value.trim(),
+        showValues: q('[data-o=values]').checked,
+        showLegend: q('[data-o=legend]').checked,
+      });
+      rerenderEl(el);
+      commit();
+      m.close();
+    }
+  });
+}
+
+function openTableEditor(el) {
+  const work = clone(el);
+  const m = modal('Dados da tabela', { wide: true });
+  m.body.innerHTML = `<div class="data-opts">
+      <label class="check"><input type="checkbox" data-o="header"> 1ª linha é cabeçalho</label>
+      <label>Tamanho do texto <input class="text-input" data-o="fs" type="number" min="8" max="120" style="width:90px"></label>
+    </div>
+    <div class="data-grid-wrap"><table class="data-grid"></table></div>
+    <div class="data-actions">
+      <button class="btn btn-sm" type="button" data-a="addRow">+ Linha</button>
+      <button class="btn btn-sm" type="button" data-a="addCol">+ Coluna</button>
+      <span style="flex:1"></span>
+      <button class="btn btn-sm" type="button" data-a="cancel">Cancelar</button>
+      <button class="btn btn-sm btn-primary" type="button" data-a="ok">Aplicar</button>
+    </div>`;
+  const q = (s) => m.body.querySelector(s);
+  q('[data-o=header]').checked = work.header !== false;
+  q('[data-o=fs]').value = work.fontSize || 24;
+  const grid = q('.data-grid');
+  const cols = () => Math.max(1, ...work.rows.map((r) => r.length));
+  const draw = () => {
+    grid.replaceChildren();
+    const n = cols();
+    work.align = Array.from({ length: n }, (_, i) => (work.align && work.align[i]) || 'left');
+    const ctrl = grid.insertRow();
+    for (let c = 0; c < n; c++) {
+      const td = ctrl.insertCell();
+      const wrap = document.createElement('div');
+      wrap.className = 'ser-head';
+      const sel = document.createElement('select');
+      sel.className = 'text-input';
+      sel.title = 'Alinhamento da coluna';
+      [['left', 'Esquerda'], ['center', 'Centro'], ['right', 'Direita']].forEach(([v, t]) => sel.add(new Option(t, v)));
+      sel.value = work.align[c];
+      sel.addEventListener('change', () => (work.align[c] = sel.value));
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'icon-btn';
+      del.title = 'Remover coluna';
+      del.innerHTML = ic('x');
+      del.addEventListener('click', () => {
+        if (n > 1) {
+          work.rows.forEach((r) => r.splice(c, 1));
+          work.align.splice(c, 1);
+          if (work.colWidths) {
+            work.colWidths.splice(c, 1);
+            const t = work.colWidths.reduce((a, b) => a + b, 0);
+            work.colWidths = work.colWidths.map((w) => w / t);
+          }
+        }
+        draw();
+      });
+      wrap.append(sel, del);
+      td.appendChild(wrap);
+    }
+    ctrl.insertCell();
+    work.rows.forEach((r, ri) => {
+      const tr = grid.insertRow();
+      for (let c = 0; c < n; c++) tr.insertCell().appendChild(cellInput(r[c] ?? '', (v) => (r[c] = v)));
+      const td = tr.insertCell();
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.className = 'icon-btn';
+      del.title = 'Remover linha';
+      del.innerHTML = ic('x');
+      del.addEventListener('click', () => {
+        if (work.rows.length > 1) work.rows.splice(ri, 1);
+        draw();
+      });
+      td.appendChild(del);
+    });
+  };
+  draw();
+  m.body.addEventListener('click', (ev) => {
+    const a = ev.target.closest('[data-a]')?.dataset.a;
+    if (a === 'addRow') {
+      work.rows.push(Array(cols()).fill(''));
+      draw();
+    } else if (a === 'addCol') {
+      work.rows.forEach((r) => r.push(''));
+      if (work.colWidths) {
+        const n = work.colWidths.length + 1;
+        work.colWidths = [...work.colWidths.map((w) => (w * (n - 1)) / n), 1 / n];
+      }
+      draw();
+    } else if (a === 'cancel') m.close();
+    else if (a === 'ok') {
+      // cresce/encolhe a altura junto com o número de linhas
+      const rowH = el.h / Math.max(1, el.rows.length);
+      Object.assign(el, work, { header: q('[data-o=header]').checked, fontSize: Number(q('[data-o=fs]').value) || 24 });
+      el.h = Math.round(rowH * el.rows.length);
+      rerenderEl(el);
+      commit();
+      m.close();
+    }
+  });
 }
 
 function deleteSelected() {
@@ -1683,6 +1921,10 @@ const COMMANDS = {
     }),
   shapesMenu: (btn) =>
     showMenu(btn, (m) => {
+      mhead(m, 'Dados');
+      mi(m, 'Gráfico de barras', () => addChart('bar'), { icon: 'grid' });
+      mi(m, 'Gráfico de linhas', () => addChart('line'), { icon: 'normalView' });
+      mi(m, 'Tabela', addTable, { icon: 'layout' });
       mhead(m, 'Inserir forma');
       const grid = document.createElement('div');
       grid.className = 'shape-grid';

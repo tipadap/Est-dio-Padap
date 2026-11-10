@@ -220,6 +220,69 @@ export async function exportPptx(title, slides, onProgress = () => {}) {
         } else if (el.type === 'image') {
           if (!el.src) continue;
           s.addImage({ data: await rasterImage(el), ...box, transparency });
+        } else if (el.type === 'chart') {
+          // gráfico nativo do PowerPoint (continua editável lá: botão direito > Editar dados)
+          const data = (el.series || []).map((se) => ({ name: se.name, labels: el.categories, values: se.values.map(Number) }));
+          const tc = hex(el.textColor || '#0F252F');
+          const fsz = Math.max(9, Math.min(16, pt(el.h / 24)));
+          s.addChart(el.chartType === 'line' ? pptx.ChartType.line : pptx.ChartType.bar, data, {
+            ...box,
+            barDir: 'col',
+            barGapWidthPct: 60,
+            chartColors: (el.series || []).map((se) => hex(se.color)),
+            showValue: el.showValues !== false,
+            dataLabelColor: tc,
+            dataLabelFontSize: fsz,
+            dataLabelFontFace: 'Space Grotesk',
+            showLegend: el.showLegend !== false,
+            legendPos: 'b',
+            legendColor: tc,
+            legendFontFace: 'Space Grotesk',
+            legendFontSize: fsz,
+            showTitle: !!el.title,
+            title: el.title || undefined,
+            titleColor: tc,
+            titleFontFace: 'Space Grotesk',
+            catAxisLabelColor: tc,
+            catAxisLabelFontFace: 'Space Grotesk',
+            catAxisLabelFontSize: fsz,
+            valAxisLabelColor: tc,
+            valAxisLabelFontFace: 'Space Grotesk',
+            valAxisLabelFontSize: fsz,
+            valGridLine: { color: hex(el.gridColor || '#D9E2E6'), size: 1 },
+            lineSize: 3,
+            lineDataSymbol: 'circle',
+            lineDataSymbolSize: 8,
+          });
+        } else if (el.type === 'table') {
+          // tabela nativa do PowerPoint
+          const rows = el.rows || [];
+          const cols = Math.max(1, ...rows.map((r) => r.length));
+          const widths = el.colWidths && el.colWidths.length === cols ? el.colWidths : Array(cols).fill(1 / cols);
+          const rowH = inch(el.h / Math.max(1, rows.length));
+          const body = rows.map((r, ri) => {
+            const head = el.header !== false && ri === 0;
+            const fill = head ? el.headerFill || '#1B4745' : ri % 2 === 1 ? el.stripeFill || '#E8F6E6' : '#FFFFFF';
+            return Array.from({ length: cols }, (_, c) => ({
+              text: String(r[c] ?? ''),
+              options: {
+                fill: { color: hex(fill) },
+                color: hex(head ? el.headerColor || '#FFFFFF' : el.textColor || '#0F252F'),
+                bold: head,
+                align: (el.align && el.align[c]) || 'left',
+                valign: 'middle',
+                border: [{ type: 'none' }, { type: 'none' }, { pt: 0.75, color: hex(el.borderColor || '#D9E2E6') }, { type: 'none' }],
+              },
+            }));
+          });
+          s.addTable(body, {
+            x: box.x, y: box.y, w: box.w,
+            colW: widths.map((wf) => box.w * wf),
+            rowH: Array(rows.length).fill(rowH),
+            fontFace: 'Space Grotesk',
+            fontSize: pt(el.fontSize || 24),
+            margin: [0, 0.08, 0, 0.08],
+          });
         } else if (NATIVE[el.shape] && !el.fill2) {
           const isLine = el.shape === 'line';
           const lineColor = isLine ? (el.stroke !== 'none' ? el.stroke : el.fill) : el.stroke;

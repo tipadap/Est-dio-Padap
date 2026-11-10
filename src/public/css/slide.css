@@ -24,3 +24,6 @@
   font-size: 30px; color: #0F4C4F; background: rgba(255, 255, 255, .85); padding: 12px 22px; border-radius: 12px; max-width: 70%; text-align: center;
 }
 .slide .el-shape svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.slide .el-chart svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.slide .tbl { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; }
+.slide .tbl td { padding: 0 .6em; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; vertical-align: middle; }

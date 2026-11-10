@@ -192,6 +192,27 @@ test('sanitização descarta campos e imagens externas', () => {
   assert.throws(() => cleanPresentation({ slides: [] }));
 });
 
+test('gráfico e tabela: dados validados', () => {
+  const d = cleanPresentation({
+    slides: [{
+      elements: [
+        { type: 'chart', chartType: 'pizza', x: 0, y: 0, w: 800, h: 400, categories: ['A', 'B', '<b>C</b>'],
+          series: [{ name: 'S1', color: 'red', values: [1, '2', 'x'] }, { name: 'S2', color: '#123456', values: [5] }] },
+        { type: 'table', x: 0, y: 0, w: 800, h: 300, rows: [['a', 'b', 'c'], ['1'], 'lixo'], align: ['right', 'meio'], fontSize: 999 },
+      ],
+    }],
+  });
+  const [c, tb] = d.slides[0].elements;
+  assert.strictEqual(c.chartType, 'bar');
+  assert.deepStrictEqual(c.categories, ['A', 'B', '<b>C</b>']);
+  assert.deepStrictEqual(c.series[0].values, [1, 2, 0]);
+  assert.strictEqual(c.series[0].color, '#1DBD2C');
+  assert.deepStrictEqual(c.series[1].values, [5, 0, 0]);
+  assert.deepStrictEqual(tb.rows, [['a', 'b', 'c'], ['1', '', ''], ['', '', '']]);
+  assert.deepStrictEqual(tb.align, ['right', 'left', 'left']);
+  assert.strictEqual(tb.fontSize, 120);
+});
+
 test('outra pessoa não vê nem edita; equipe vê; link público funciona', async () => {
   const c = await ana.agent.post('/api/presentations').set('x-csrf-token', ana.token).send({ title: 'Privada', data: slideData() });
   const id = c.body.id;

@@ -209,3 +209,17 @@ html, body { height: 100%; overflow: hidden; }
 .history-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
 .history-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; max-height: 55vh; overflow: auto; }
 .history-thumbs .thumb { border: 1px solid var(--line); border-radius: 6px; }
+
+/* Editor de dados (gráfico/tabela) */
+.data-opts { display: flex; gap: 14px; align-items: end; flex-wrap: wrap; margin-bottom: 14px; }
+.data-opts label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.data-opts .check { display: inline-flex; color: var(--text); }
+.data-opts .text-input { height: 36px; }
+.data-grid-wrap { max-height: 50vh; overflow: auto; border: 1px solid var(--line); border-radius: 10px; }
+.data-grid { border-collapse: collapse; width: 100%; }
+.data-grid td { border-bottom: 1px solid var(--line); padding: 4px; min-width: 120px; }
+.data-grid tr:first-child td { background: #F7FAFB; }
+.data-grid .text-input { height: 34px; font-size: 14px; }
+.data-grid .ser-head { display: flex; gap: 4px; align-items: center; }
+.data-grid input[type=color] { width: 30px; height: 30px; border: 0; padding: 0; background: none; flex: none; cursor: pointer; }
+.data-actions { display: flex; gap: 8px; margin-top: 14px; align-items: center; }

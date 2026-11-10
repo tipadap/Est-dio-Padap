@@ -22,7 +22,7 @@ const CSS_COLOR = [HEX, /^rgba?\(\s*[\d.]+\s*,\s*[\d.]+\s*,\s*[\d.]+\s*(,\s*[\d.
 const ID = /^[\w-]{1,40}$/;
 const SRC = /^\/(uploads|static\/img)\/[\w-]+(\/[\w-]+)*\.(jpe?g|png|webp|svg)$/i;
 
-const TYPES = ['text', 'image', 'shape'];
+const TYPES = ['text', 'image', 'shape', 'chart', 'table'];
 const MASKS = ['none', 'round', 'circle', 'leaf', 'leafAlt', 'arch'];
 const SHAPES = ['rect', 'round', 'ellipse', 'leaf', 'leafAlt', 'triangle', 'arrow', 'line', 'symbol', 'symbolOutline', 'arc'];
 const FONTS = ['Space Grotesk', 'Arial', 'Georgia', 'Verdana', 'Courier New'];
@@ -93,6 +93,33 @@ function cleanElement(el) {
     if (typeof el.maskSrc === 'string' && SRC.test(el.maskSrc) && !el.maskSrc.includes('..')) out.maskSrc = el.maskSrc;
     out.fit = pick(el.fit, ['cover', 'contain'], 'cover');
     out.placeholder = str(el.placeholder, 120);
+  } else if (el.type === 'chart') {
+    out.chartType = pick(el.chartType, ['bar', 'line'], 'bar');
+    out.title = str(el.title, 120);
+    out.categories = (Array.isArray(el.categories) ? el.categories : []).slice(0, 40).map((c) => str(String(c ?? ''), 60));
+    out.series = (Array.isArray(el.series) ? el.series : []).slice(0, 8).map((s) => ({
+      name: str(String((s && s.name) ?? ''), 60),
+      color: color(s && s.color, '#1DBD2C'),
+      values: out.categories.map((_, i) => num(s && Array.isArray(s.values) ? s.values[i] : 0, -1e9, 1e9, 0)),
+    }));
+    out.showValues = el.showValues !== false;
+    out.showLegend = el.showLegend !== false;
+    out.textColor = color(el.textColor, '#0F252F');
+    out.gridColor = color(el.gridColor, '#D9E2E6');
+  } else if (el.type === 'table') {
+    const rows = (Array.isArray(el.rows) ? el.rows : []).slice(0, 60).map((r) => (Array.isArray(r) ? r : []).slice(0, 12).map((c) => str(String(c ?? ''), 200)));
+    const cols = Math.max(1, ...rows.map((r) => r.length));
+    out.rows = rows.length ? rows.map((r) => Array.from({ length: cols }, (_, i) => r[i] ?? '')) : [['']];
+    const widths = Array.isArray(el.colWidths) && el.colWidths.length === cols ? el.colWidths.map((w) => num(w, 0.01, 1, 1 / cols)) : null;
+    if (widths) out.colWidths = widths;
+    out.align = Array.from({ length: cols }, (_, i) => pick(Array.isArray(el.align) ? el.align[i] : '', ALIGNS, 'left'));
+    out.header = el.header !== false;
+    out.fontSize = num(el.fontSize, 8, 120, 24);
+    out.textColor = color(el.textColor, '#0F252F');
+    out.headerFill = color(el.headerFill, '#1B4745');
+    out.headerColor = color(el.headerColor, '#FFFFFF');
+    out.stripeFill = color(el.stripeFill, '#E8F6E6');
+    out.borderColor = color(el.borderColor, '#D9E2E6');
   } else {
     out.shape = pick(el.shape, SHAPES, 'rect');
     out.fill = el.fill === 'none' ? 'none' : color(el.fill, '#1DBD2C');

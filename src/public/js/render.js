@@ -168,10 +168,128 @@ export function renderElement(el, { editing = false } = {}) {
       node.classList.add('placeholder');
       if (editing) node.innerHTML = `<span>${esc(el.placeholder || 'Clique duas vezes para inserir uma imagem')}</span>`;
     }
+  } else if (el.type === 'chart') {
+    node.innerHTML = chartSvg(el);
+  } else if (el.type === 'table') {
+    node.innerHTML = tableHtml(el);
   } else {
     node.innerHTML = shapeSvg(el);
   }
   return node;
+}
+
+// ---- Gráfico (barras/linhas) ------------------------------------------------
+
+/** Escala "redonda" para o eixo Y (0, 20, 40… ou 0, 250, 500…). */
+export function niceScale(max, ticks = 5) {
+  if (!(max > 0)) return { max: 1, step: 0.2 };
+  const raw = max / ticks;
+  const mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => s >= raw) || 10 * mag;
+  return { max: Math.ceil(max / step) * step, step };
+}
+
+const fmtNum = (v) => (Math.round(v * 100) / 100).toLocaleString('pt-BR');
+
+/**
+ * el = { chartType: 'bar'|'line', categories: [..], series: [{ name, color, values: [..] }],
+ *        title, showValues, showLegend, textColor, gridColor }
+ * Desenha em SVG no tamanho do elemento (vale para tela, PDF e miniaturas).
+ */
+export function chartSvg(el) {
+  const W0 = el.w;
+  const H0 = el.h;
+  const cats = el.categories || [];
+  const series = (el.series || []).filter((s) => s && Array.isArray(s.values));
+  const tc = el.textColor || '#0F252F';
+  const gc = el.gridColor || '#D9E2E6';
+  const fs = Math.max(14, Math.min(26, H0 / 24));
+  const top = (el.title ? fs * 2.4 : fs) + 4;
+  const legendH = el.showLegend !== false && series.length ? fs * 2.2 : 0;
+  const bottom = fs * 2 + legendH;
+  const vals = series.flatMap((s) => s.values.map(Number).filter((n) => Number.isFinite(n)));
+  const maxV = Math.max(0, ...vals);
+  const { max, step } = niceScale(maxV * (el.showValues !== false ? 1.08 : 1));
+  const tickLabels = [];
+  for (let v = 0; v <= max + 1e-9; v += step) tickLabels.push(v);
+  const left = fs * 0.8 + Math.max(...tickLabels.map((v) => fmtNum(v).length)) * fs * 0.62;
+  const right = fs;
+  const pw = Math.max(10, W0 - left - right);
+  const ph = Math.max(10, H0 - top - bottom);
+  const y = (v) => top + ph - (Number(v) / max) * ph;
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" width="${W0}" height="${H0}" viewBox="0 0 ${W0} ${H0}" font-family="Space Grotesk, sans-serif">`;
+  if (el.title) s += `<text x="${W0 / 2}" y="${fs * 1.3}" text-anchor="middle" font-size="${fs * 1.1}" font-weight="700" fill="${tc}">${esc(el.title)}</text>`;
+  for (const v of tickLabels) {
+    s += `<line x1="${left}" x2="${left + pw}" y1="${y(v)}" y2="${y(v)}" stroke="${gc}" stroke-width="1.5"/>`;
+    s += `<text x="${left - fs * 0.5}" y="${y(v) + fs * 0.35}" text-anchor="end" font-size="${fs * 0.85}" fill="${tc}" opacity=".7">${fmtNum(v)}</text>`;
+  }
+  const n = Math.max(1, cats.length);
+  const band = pw / n;
+  cats.forEach((c, i) => {
+    s += `<text x="${left + band * (i + 0.5)}" y="${top + ph + fs * 1.4}" text-anchor="middle" font-size="${fs * 0.9}" fill="${tc}">${esc(c)}</text>`;
+  });
+  if (el.chartType === 'line') {
+    for (const se of series) {
+      const pts = cats.map((_, i) => [left + band * (i + 0.5), y(se.values[i] || 0)]);
+      s += `<polyline points="${pts.map((p) => p.join(',')).join(' ')}" fill="none" stroke="${se.color}" stroke-width="${fs * 0.22}" stroke-linejoin="round"/>`;
+      pts.forEach((p, i) => {
+        s += `<circle cx="${p[0]}" cy="${p[1]}" r="${fs * 0.3}" fill="${se.color}"/>`;
+        if (el.showValues) s += `<text x="${p[0]}" y="${p[1] - fs * 0.6}" text-anchor="middle" font-size="${fs * 0.75}" fill="${tc}">${fmtNum(se.values[i] || 0)}</text>`;
+      });
+    }
+  } else {
+    const k = series.length || 1;
+    const gap = band * 0.2;
+    const bw = (band - gap * 2) / k;
+    series.forEach((se, si) => {
+      cats.forEach((_, i) => {
+        const v = Number(se.values[i]) || 0;
+        const x = left + band * i + gap + bw * si;
+        s += `<rect x="${x + bw * 0.06}" y="${y(v)}" width="${bw * 0.88}" height="${top + ph - y(v)}" fill="${se.color}" rx="${Math.min(6, bw * 0.08)}"/>`;
+        if (el.showValues !== false) s += `<text x="${x + bw / 2}" y="${y(v) - fs * 0.35}" text-anchor="middle" font-size="${fs * 0.8}" font-weight="600" fill="${tc}">${fmtNum(v)}</text>`;
+      });
+    });
+  }
+  s += `<line x1="${left}" x2="${left + pw}" y1="${top + ph}" y2="${top + ph}" stroke="${tc}" stroke-opacity=".35" stroke-width="2"/>`;
+  if (legendH) {
+    const items = series.map((se) => ({ se, w: fs * 1.6 + esc(se.name || '').length * fs * 0.55 + fs }));
+    const total = items.reduce((a, b) => a + b.w, 0);
+    let lx = Math.max(left, (W0 - total) / 2);
+    const ly = H0 - fs * 0.9;
+    for (const it of items) {
+      s += `<rect x="${lx}" y="${ly - fs * 0.75}" width="${fs * 0.9}" height="${fs * 0.9}" rx="3" fill="${it.se.color}"/>`;
+      s += `<text x="${lx + fs * 1.25}" y="${ly}" font-size="${fs * 0.85}" fill="${tc}">${esc(it.se.name || '')}</text>`;
+      lx += it.w;
+    }
+  }
+  return `${s}</svg>`;
+}
+
+// ---- Tabela -----------------------------------------------------------------
+
+/**
+ * el = { rows: [[texto, …], …], colWidths: [frações], header: true, fontSize, textColor,
+ *        headerFill, headerColor, stripeFill, borderColor, align: [por coluna] }
+ */
+export function tableHtml(el) {
+  const rows = el.rows || [];
+  const cols = Math.max(1, ...rows.map((r) => r.length));
+  const widths = (el.colWidths && el.colWidths.length === cols ? el.colWidths : Array(cols).fill(1 / cols)).map((w) => `${(w * 100).toFixed(3)}%`);
+  const rh = el.h / Math.max(1, rows.length);
+  const fs = el.fontSize || 24;
+  let html = `<table class="tbl" style="font-size:${fs}px;color:${el.textColor || '#0F252F'}"><colgroup>${widths.map((w) => `<col style="width:${w}">`).join('')}</colgroup>`;
+  rows.forEach((r, ri) => {
+    const isHead = el.header !== false && ri === 0;
+    const bg = isHead ? el.headerFill || '#1B4745' : (ri % 2 === 1 ? el.stripeFill || '#E8F6E6' : '#FFFFFF');
+    const color = isHead ? el.headerColor || '#FFFFFF' : '';
+    html += `<tr style="height:${rh}px;background:${bg};${color ? `color:${color};` : ''}">`;
+    for (let c = 0; c < cols; c++) {
+      const a = (el.align && el.align[c]) || 'left';
+      html += `<td style="text-align:${a};${isHead ? 'font-weight:700;' : ''}border-bottom:1px solid ${el.borderColor || '#D9E2E6'}">${esc(r[c] ?? '')}</td>`;
+    }
+    html += '</tr>';
+  });
+  return `${html}</table>`;
 }
 
 export function hasText(html) {
