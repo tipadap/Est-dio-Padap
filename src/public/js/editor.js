@@ -1,36 +1,40 @@
 // Editor de apresentações do Estúdio PADAP.
-import { ICONS } from '/js/icons.js';
-import { W, H, BRAND, uid, renderSlide, renderElement, mountThumb, readBoot, api, toast, hasText, shapeSvg, fmtDate } from './render.js';
-import { LAYOUTS, LAYOUT_ORDER, PADAP_LAYOUT_ORDER, FUNDOS_LAYOUT_ORDER, buildPresentation } from './templates.js';
+// Núcleo: estado, desfazer/salvar, palco (seleção, mover, redimensionar), slides, comandos e teclado.
+// Módulos:
+//   editor/ui.js — Menus suspensos, janelas (modal), paleta e grade de layouts. Sem estado do editor.
+//   editor/texto.js — Edição de texto e cores (formatação, fonte, tamanho, alinhamento, realce).
+//   editor/dados.js — Gráficos, tabelas, preços/indicadores de mercado e dados do produtor (Portal).
+//   editor/imagens.js — Seletor de imagens (Banco de imagens, Portfólio, Minhas imagens).
+//   editor/arquivo.js — Compartilhar, exportar (PowerPoint/PDF/impressão), salvar como e histórico de versões.
 import { present } from './present.js';
-import { exportPptx } from './pptx.js';
-import { exportPdf } from './pdf.js';
-
-const boot = readBoot();
+import { BRAND, H, W, api, hasText, mountThumb, readBoot, renderElement, renderSlide, shapeSvg, toast, uid } from './render.js';
+import { LAYOUTS, buildPresentation } from './templates.js';
+import { doExportPdf, doExportPptx, openHistory, openPrint, openShare, saveAs, saveNow } from './editor/arquivo.js';
+import { addChart, addMarketIndicators, addPriceTable, addTable, openChartEditor, openProducerPicker, openTableEditor } from './editor/dados.js';
+import { openPicker } from './editor/imagens.js';
+import { applyColor, applyHighlight, applyStroke, enterEdit, exec, exitEdit, formatText, hasRangeSelection, setAlign, setFontFamily, setFontSize, toggleInline } from './editor/texto.js';
+import { clamp, closeMenu, ic, layoutGrid, mhead, mi, msep, showMenu, swatches } from './editor/ui.js';
+export const boot = readBoot();
 // Rascunho (/editor/novo): monta o modelo aqui; só vira registro no primeiro salvamento.
 if (!boot.id) Object.assign(boot, buildPresentation(boot.template || 'branco', boot.templatePhotos || {}));
-const pres = { id: boot.id, title: boot.title, data: boot.data };
+export const pres = { id: boot.id, title: boot.title, data: boot.data };
 // sel = elemento selecionado (um); group = ids quando há vários selecionados (sel fica null)
-const S = { cur: 0, sel: null, group: [], editing: null, zoom: 'fit', view: 'normal', lang: 'pt-BR', clipboard: null };
+export const S = { cur: 0, sel: null, group: [], editing: null, zoom: 'fit', view: 'normal', lang: 'pt-BR', clipboard: null };
 
-const $ = (s) => document.querySelector(s);
-const ic = (n) => `<svg class="i" viewBox="0 0 24 24">${ICONS[n]}</svg>`;
-const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+export const $ = (s) => document.querySelector(s);
 const stage = $('#stage');
 const scroller = $('#stage-scroll');
 const panel = $('#slides');
 
-const slides = () => pres.data.slides;
-const curSlide = () => slides()[S.cur];
-const findEl = (id) => curSlide().elements.find((e) => e.id === id);
-const selEl = () => (S.sel ? findEl(S.sel) : null);
+export const slides = () => pres.data.slides;
+export const curSlide = () => slides()[S.cur];
+export const findEl = (id) => curSlide().elements.find((e) => e.id === id);
+export const selEl = () => (S.sel ? findEl(S.sel) : null);
 const groupEls = () => S.group.map(findEl).filter(Boolean);
 /** Elementos selecionados (um ou vários). */
 const selection = () => (S.group.length ? groupEls() : selEl() ? [selEl()] : []);
-const nodeOf = (id) => stage.querySelector(`.el[data-id="${CSS.escape(id)}"]`);
-const clone = (o) => JSON.parse(JSON.stringify(o));
-
-const PALETTE = ['#072B35', '#0F4C4F', '#1DBD2C', '#169A23', '#BFEFC5', '#E8F8EA', '#FFFFFF', '#F3F7F8', '#C7D3D7', '#5A6E76', '#0B2530', '#000000'];
+export const nodeOf = (id) => stage.querySelector(`.el[data-id="${CSS.escape(id)}"]`);
+export const clone = (o) => JSON.parse(JSON.stringify(o));
 
 // ============================================================================
 // Histórico (desfazer/refazer) e salvamento automático
@@ -40,7 +44,7 @@ let lastSnap = JSON.stringify(slides());
 const undoStack = [];
 const redoStack = [];
 
-function commit() {
+export function commit() {
   const s = JSON.stringify(slides());
   if (s === lastSnap) return;
   undoStack.push({ s: lastSnap, cur: S.cur });
@@ -87,12 +91,12 @@ let saving = false;
 let pending = false;
 const statusEl = $('#save-status');
 
-function setStatus(msg, err = false) {
+export function setStatus(msg, err = false) {
   statusEl.textContent = msg;
   statusEl.classList.toggle('err', err);
 }
 
-function scheduleSave(delay = 900) {
+export function scheduleSave(delay = 900) {
   pending = true;
   setStatus('Alterações não salvas');
   clearTimeout(saveTimer);
@@ -131,18 +135,28 @@ async function save() {
 }
 
 /** Garante que a apresentação exista no banco (rascunho é salvo antes de compartilhar/imprimir). */
-async function ensureSaved() {
+export async function ensureSaved() {
   if (!pres.id) pending = true;
   await flush();
   return !!pres.id;
 }
 
-async function flush() {
+export async function flush() {
   if (S.editing) exitEdit();
   clearTimeout(saveTimer);
   while (saving) await new Promise((r) => setTimeout(r, 100));
   if (pending) await save();
   return !pending;
+}
+
+/** Marca que há alterações a salvar (o próximo flush salva mesmo sem edição nova). */
+export function markDirty() {
+  pending = true;
+}
+
+/** Descarta o que estava pendente (ex.: antes de recarregar após restaurar uma versão). */
+export function discardPending() {
+  pending = false;
 }
 
 window.addEventListener('beforeunload', (e) => {
@@ -173,7 +187,7 @@ function applyZoom() {
   drawSelection();
 }
 
-function renderStage() {
+export function renderStage() {
   const node = renderSlide(curSlide(), { editing: true });
   node.lang = S.lang;
   stage.replaceChildren(node);
@@ -183,7 +197,7 @@ function renderStage() {
   syncToolbar();
 }
 
-function rerenderEl(el) {
+export function rerenderEl(el) {
   const old = nodeOf(el.id);
   if (!old) return;
   const fresh = renderElement(el, { editing: true });
@@ -192,7 +206,7 @@ function rerenderEl(el) {
   drawSelection();
 }
 
-function drawSelection() {
+export function drawSelection() {
   stage.querySelectorAll('.sel-box').forEach((b) => b.remove());
   const z = zoom();
   if (S.group.length) {
@@ -254,7 +268,7 @@ function refreshThumb(i) {
   if (item && slides()[i]) mountThumb(item, slides()[i]);
 }
 let thumbTimer;
-const thumbSoon = () => {
+export const thumbSoon = () => {
   clearTimeout(thumbTimer);
   thumbTimer = setTimeout(() => refreshThumb(S.cur), 400);
 };
@@ -554,275 +568,10 @@ stage.addEventListener('dblclick', (e) => {
 new ResizeObserver(() => S.zoom === 'fit' && applyZoom()).observe(scroller);
 
 // ============================================================================
-// Edição de texto
-// ============================================================================
-
-let savedRange = null;
-
-function txtNode() {
-  return S.editing ? nodeOf(S.editing)?.querySelector('.txt') : null;
-}
-
-function enterEdit(id, keepCaret = false) {
-  const el = findEl(id);
-  if (!el || el.type !== 'text') return;
-  if (S.editing === id) return;
-  exitEdit();
-  S.sel = id;
-  S.editing = id;
-  const node = nodeOf(id);
-  node.classList.add('editing');
-  node.classList.remove('hint');
-  const txt = node.querySelector('.txt');
-  txt.contentEditable = 'true';
-  txt.spellcheck = true;
-  txt.lang = S.lang;
-  txt.focus();
-  const sel = getSelection();
-  if (!keepCaret || !sel.rangeCount || !txt.contains(sel.anchorNode)) {
-    const r = document.createRange();
-    r.selectNodeContents(txt);
-    r.collapse(false);
-    sel.removeAllRanges();
-    sel.addRange(r);
-  }
-  txt.addEventListener('input', onTextInput);
-  txt.addEventListener('paste', onPaste);
-  drawSelection();
-}
-
-function onTextInput() {
-  const el = findEl(S.editing);
-  if (el) el.html = txtNode().innerHTML;
-  scheduleSave(1500);
-  thumbSoon();
-}
-
-// Colar sempre como texto simples (evita trazer estilos de outros programas).
-function onPaste(e) {
-  e.preventDefault();
-  const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-  document.execCommand('insertText', false, text);
-}
-
-function exitEdit() {
-  if (!S.editing) return;
-  const id = S.editing;
-  const el = findEl(id);
-  const node = nodeOf(id);
-  S.editing = null;
-  savedRange = null;
-  if (node && el) {
-    const txt = node.querySelector('.txt');
-    txt.removeEventListener('input', onTextInput);
-    txt.removeEventListener('paste', onPaste);
-    txt.contentEditable = 'false';
-    node.classList.remove('editing');
-    el.html = hasText(txt.innerHTML) ? txt.innerHTML : '';
-    if (!el.html) {
-      txt.innerHTML = '';
-      node.classList.add('hint');
-    }
-  }
-  getSelection()?.removeAllRanges();
-  drawSelection();
-  commit();
-}
-
-document.addEventListener('selectionchange', () => {
-  const txt = txtNode();
-  const s = getSelection();
-  if (txt && s.rangeCount && txt.contains(s.anchorNode)) savedRange = s.getRangeAt(0).cloneRange();
-});
-
-function restoreRange() {
-  const txt = txtNode();
-  if (!txt) return false;
-  txt.focus();
-  if (savedRange) {
-    const s = getSelection();
-    s.removeAllRanges();
-    s.addRange(savedRange);
-  }
-  return true;
-}
-
-const hasRangeSelection = () => S.editing && savedRange && !savedRange.collapsed;
-
-/**
- * Executa um comando de formatação. Editando: vale para o trecho selecionado.
- * Só com a caixa selecionada: vale para o texto inteiro.
- */
-function formatText(fn) {
-  const el = selEl();
-  if (!el || el.type !== 'text') return false;
-  if (S.editing) {
-    restoreRange();
-    fn();
-    findEl(S.editing).html = txtNode().innerHTML;
-    scheduleSave(1200);
-    thumbSoon();
-    return true;
-  }
-  const node = nodeOf(el.id);
-  const txt = node.querySelector('.txt');
-  txt.contentEditable = 'true';
-  txt.focus();
-  const r = document.createRange();
-  r.selectNodeContents(txt);
-  const s = getSelection();
-  s.removeAllRanges();
-  s.addRange(r);
-  fn();
-  el.html = txt.innerHTML;
-  txt.contentEditable = 'false';
-  s.removeAllRanges();
-  commit();
-  return true;
-}
-
-function exec(cmd, val = null, css = true) {
-  document.execCommand('styleWithCSS', false, css);
-  document.execCommand(cmd, false, val);
-}
-
-/** Troca <font size=7>/<font face> gerados pelo execCommand por <span style>. */
-function spanify(selector, prop, value) {
-  const txt = txtNode();
-  txt.querySelectorAll(selector).forEach((f) => {
-    const sp = document.createElement('span');
-    sp.style[prop] = value;
-    sp.append(...f.childNodes);
-    f.replaceWith(sp);
-  });
-  findEl(S.editing).html = txt.innerHTML;
-  scheduleSave(1200);
-  thumbSoon();
-}
-
-function stripInline(html, props) {
-  const d = document.createElement('div');
-  d.innerHTML = html;
-  d.querySelectorAll('[style]').forEach((n) => {
-    props.forEach((p) => n.style.removeProperty(p));
-    if (!n.getAttribute('style')) n.removeAttribute('style');
-  });
-  if (props.includes('color')) d.querySelectorAll('font[color]').forEach((f) => f.removeAttribute('color'));
-  if (props.includes('font-family')) d.querySelectorAll('font[face]').forEach((f) => f.removeAttribute('face'));
-  if (props.includes('font-size')) d.querySelectorAll('font[size]').forEach((f) => f.removeAttribute('size'));
-  return d.innerHTML;
-}
-
-function setFontSize(px) {
-  const el = selEl();
-  if (!el || el.type !== 'text' || !Number.isFinite(px)) return;
-  px = clamp(Math.round(px), 6, 400);
-  if (hasRangeSelection()) {
-    restoreRange();
-    exec('fontSize', '7', false);
-    spanify('font[size="7"]', 'fontSize', `${px}px`);
-    return;
-  }
-  exitEdit();
-  el.style.fontSize = px;
-  el.html = stripInline(el.html, ['font-size']);
-  rerenderEl(el);
-  commit();
-  syncToolbar();
-}
-
-function setFontFamily(name) {
-  const el = selEl();
-  if (!el || el.type !== 'text') return;
-  if (hasRangeSelection()) {
-    restoreRange();
-    exec('fontName', name, false);
-    spanify('font[face]', 'fontFamily', `'${name}'`);
-    return;
-  }
-  exitEdit();
-  el.style.fontFamily = name;
-  el.html = stripInline(el.html, ['font-family']);
-  rerenderEl(el);
-  commit();
-}
-
-function toggleInline(cmd) {
-  const el = selEl();
-  if (!el || el.type !== 'text') return;
-  if (!S.editing && !hasText(el.html)) {
-    if (cmd === 'bold') {
-      el.style.bold = !el.style.bold;
-      rerenderEl(el);
-      commit();
-    }
-    return;
-  }
-  formatText(() => exec(cmd));
-}
-
-function setAlign(a) {
-  const el = selEl();
-  if (!el || el.type !== 'text') return toast('Selecione uma caixa de texto.');
-  const editing = S.editing;
-  if (editing) exitEdit();
-  el.style.align = a;
-  el.html = stripInline(el.html, ['text-align']);
-  rerenderEl(el);
-  commit();
-  if (editing) enterEdit(editing);
-  return undefined;
-}
-
-// ============================================================================
-// Cores
-// ============================================================================
-
-function applyColor(c) {
-  const el = selEl();
-  if (!el) {
-    curSlide().bg = c;
-    renderStage();
-    commit();
-    return;
-  }
-  if (el.type === 'text') {
-    if (hasRangeSelection()) {
-      formatText(() => exec('foreColor', c));
-      return;
-    }
-    exitEdit();
-    el.style.color = c;
-    el.html = stripInline(el.html, ['color']);
-  } else if (el.type === 'shape') {
-    el.fill = c;
-    delete el.fill2;
-    if (el.shape === 'line' || el.shape === 'symbolOutline') el.stroke = c === 'none' ? BRAND.green : c;
-  } else return;
-  rerenderEl(el);
-  commit();
-  syncToolbar();
-}
-
-function applyStroke(c, width) {
-  const el = selEl();
-  if (!el || el.type !== 'shape') return;
-  if (c !== undefined) el.stroke = c;
-  if (width !== undefined) el.strokeWidth = width;
-  if (el.stroke !== 'none' && !el.strokeWidth) el.strokeWidth = 4;
-  rerenderEl(el);
-  commit();
-}
-
-function applyHighlight(c) {
-  if (!formatText(() => exec('hiliteColor', c))) toast('Selecione um texto.');
-}
-
-// ============================================================================
 // Elementos: inserir, imagem, ordem
 // ============================================================================
 
-function addElement(el, edit = false) {
+export function addElement(el, edit = false) {
   exitEdit();
   curSlide().elements.push(el);
   renderStage();
@@ -886,7 +635,7 @@ function setImage(el, url) {
   commit();
 }
 
-async function insertImage(url, asset = null, withText = false) {
+export async function insertImage(url, asset = null, withText = false) {
   const el = selEl();
   if (el && el.type === 'image') return setImage(el, url);
   if (withText && asset && asset.kind === 'produto') return insertProduct(url, asset);
@@ -927,363 +676,6 @@ async function insertProduct(url, asset) {
   S.sel = img.id;
   drawSelection();
   commit();
-}
-
-// ---- Gráficos e tabelas ------------------------------------------------------
-
-const SERIES_COLORS = ['#1DBD2C', '#0F4C4F', '#9BB7BD', '#F2A33A', '#5BC0EB', '#7D3C98'];
-
-function isDarkBg() {
-  const bg = (curSlide().bg || '#FFFFFF').replace('#', '');
-  return (0.299 * parseInt(bg.slice(0, 2), 16) + 0.587 * parseInt(bg.slice(2, 4), 16) + 0.114 * parseInt(bg.slice(4, 6), 16)) / 255 < 0.5;
-}
-
-function addChart(chartType) {
-  const dark = isDarkBg();
-  const el = {
-    id: uid(), type: 'chart', chartType, x: 360, y: 260, w: 1200, h: 640, title: '',
-    categories: ['Safra 23/24', 'Safra 24/25', 'Safra 25/26'],
-    series: [
-      { name: 'Testemunha', color: dark ? '#9BB7BD' : '#B8C7CB', values: [62, 65, 63] },
-      { name: 'Programa PADAP', color: '#1DBD2C', values: [71, 76, 79] },
-    ],
-    showValues: true, showLegend: true, textColor: dark ? '#FFFFFF' : '#0F252F', gridColor: dark ? '#2C5A5E' : '#D9E2E6',
-  };
-  addElement(el);
-  openChartEditor(el);
-}
-
-// ---- Preços e indicadores (Admin > Preços) -----------------------------------
-
-const brl = (v) => (v === null || v === undefined ? '' : Number(v).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
-const dataBR = (iso) => (iso ? iso.split('-').reverse().join('/') : '');
-
-async function priceRows() {
-  const d = await api('GET', '/api/precos');
-  if (!d.rows.length) {
-    toast('A tabela de preços ainda está vazia. Um administrador pode preenchê-la em Preços.', 'error');
-    return null;
-  }
-  return [['Produto', 'Marca', 'Embalagem', 'Preço (R$)', 'Prazo'], ...d.rows.map((r) => [r.produto, r.marca, r.embalagem, brl(r.preco), r.prazo])];
-}
-
-async function addPriceTable() {
-  const rows = await priceRows();
-  if (!rows) return;
-  const h = Math.min(760, 64 * rows.length);
-  addElement({
-    id: uid(), type: 'table', x: 160, y: 240, w: 1600, h,
-    rows, colWidths: [0.3, 0.18, 0.2, 0.18, 0.14], align: ['left', 'left', 'left', 'right', 'center'], header: true, fontSize: 26,
-  });
-  toast(`Tabela com ${rows.length - 1} produto(s) da tabela de preços.`);
-}
-
-async function addMarketIndicators() {
-  const d = await api('GET', '/api/precos');
-  const m = d.market || {};
-  const linhas = [];
-  if (d.ptax) linhas.push(`<b>Dólar (PTAX):</b> R$ ${d.ptax.valor.toLocaleString('pt-BR', { minimumFractionDigits: 4 })} <span style="color:#5A6E76">(${dataBR(d.ptax.data)})</span>`);
-  if (m.ureia !== null && m.ureia !== undefined) linhas.push(`<b>Ureia:</b> US$ ${brl(m.ureia)}/t`);
-  if (m.map !== null && m.map !== undefined) linhas.push(`<b>MAP:</b> US$ ${brl(m.map)}/t`);
-  if (m.kcl !== null && m.kcl !== undefined) linhas.push(`<b>KCl:</b> US$ ${brl(m.kcl)}/t`);
-  if (!linhas.length) return toast('Sem indicadores cadastrados ainda (Admin > Preços).', 'error');
-  const fonte = [m.fonte, m.data ? `ref. ${dataBR(m.data)}` : ''].filter(Boolean).join(' · ');
-  const dark = isDarkBg();
-  addElement({
-    id: uid(), type: 'text', x: 160, y: 300, w: 900, h: 60 * linhas.length + 60,
-    html: linhas.map((l) => `<div>${l}</div>`).join('') + (fonte ? `<div style="font-size:20px;color:${dark ? '#9BB7BD' : '#5A6E76'}">Fonte: ${fonte.replace(/</g, '&lt;')}</div>` : ''),
-    placeholder: 'Indicadores', style: { fontFamily: 'Space Grotesk', fontSize: 36, color: dark ? '#FFFFFF' : BRAND.teal, align: 'left', valign: 'top', lineHeight: 1.5, bold: false },
-  });
-  return undefined;
-}
-
-// ---- Dados do produtor (Portal do Produtor) ---------------------------------
-
-function openProducerPicker() {
-  const m = modal('Dados do produtor (Portal do Produtor)', { wide: true });
-  m.body.innerHTML = `<p class="muted" style="margin-top:0">Busque o produtor e escolha a propriedade: o bloco entra no slide com cliente, fazenda, município e área.</p>
-    <input class="text-input" type="search" placeholder="Nome do produtor…" style="max-width:360px;margin-bottom:12px">
-    <div class="producers"><div class="muted">Digite ao menos 2 letras.</div></div>`;
-  const input = m.body.querySelector('input');
-  const box = m.body.querySelector('.producers');
-  const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  let timer;
-  const search = async () => {
-    const q = input.value.trim();
-    if (q.length < 2) {
-      box.innerHTML = '<div class="muted">Digite ao menos 2 letras.</div>';
-      return;
-    }
-    box.innerHTML = '<div class="muted">Buscando…</div>';
-    try {
-      const { produtores } = await api('GET', `/api/portal/produtores?q=${encodeURIComponent(q)}`);
-      box.replaceChildren();
-      if (!produtores.length) box.innerHTML = '<div class="empty">Nenhum produtor encontrado.</div>';
-      for (const p of produtores) {
-        const card = document.createElement('div');
-        card.className = 'producer';
-        card.innerHTML = `<strong>${esc(p.nome)}</strong>`;
-        const props = p.propriedades.length ? p.propriedades : [{ nome: '', municipio: '', uf: '', area_ha: null }];
-        for (const pr of props) {
-          const b = document.createElement('button');
-          b.type = 'button';
-          b.className = 'btn btn-sm';
-          b.textContent = pr.nome ? `${pr.nome} — ${[pr.municipio, pr.uf].filter(Boolean).join('/')}${pr.area_ha ? ` · ${pr.area_ha.toLocaleString('pt-BR')} ha` : ''}` : 'Usar só o nome (sem propriedade cadastrada)';
-          b.addEventListener('click', () => {
-            m.close();
-            insertProducer(p, pr);
-          });
-          card.appendChild(b);
-        }
-        box.appendChild(card);
-      }
-    } catch (err) {
-      box.innerHTML = `<div class="alert alert-error">${esc(err.message)}</div>`;
-    }
-  };
-  input.addEventListener('input', () => {
-    clearTimeout(timer);
-    timer = setTimeout(search, 300);
-  });
-  input.focus();
-}
-
-function insertProducer(p, pr) {
-  const esc = (t) => String(t ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;');
-  const dark = isDarkBg();
-  const label = dark ? '#9BEA9F' : '#2E8A43';
-  const linhas = [['Cliente', p.nome]];
-  if (pr.nome) linhas.push(['Fazenda', pr.nome]);
-  const local = [pr.municipio, pr.uf].filter(Boolean).join(' (') + (pr.municipio && pr.uf ? ')' : '');
-  if (local) linhas.push(['Local', local]);
-  if (pr.area_ha) linhas.push(['Área', `${pr.area_ha.toLocaleString('pt-BR')} ha`]);
-  addElement({
-    id: uid(), type: 'text', x: 160, y: 300, w: 900, h: 110 * linhas.length,
-    html: linhas.map(([k, v]) => `<div><span style="font-size:20px;color:${label};font-weight:bold">${k.toUpperCase()}</span></div><div>${esc(v)}</div>`).join(''),
-    placeholder: 'Dados do produtor',
-    style: { fontFamily: 'Space Grotesk', fontSize: 38, color: dark ? '#FFFFFF' : BRAND.teal, align: 'left', valign: 'top', lineHeight: 1.3, bold: false },
-  });
-}
-
-function addTable() {
-  addElement({
-    id: uid(), type: 'table', x: 160, y: 300, w: 1600, h: 420,
-    rows: [['Produto', 'Marca', 'Embalagem', 'Preço (R$)'], ['', '', '', ''], ['', '', '', ''], ['', '', '', '']],
-    colWidths: [0.34, 0.22, 0.24, 0.2], align: ['left', 'left', 'left', 'right'], header: true, fontSize: 26,
-  });
-  openTableEditor(selEl());
-}
-
-function cellInput(value, onInput, attrs = '') {
-  const i = document.createElement('input');
-  i.className = 'text-input';
-  i.value = value;
-  if (attrs) i.setAttribute('inputmode', attrs);
-  i.addEventListener('input', () => onInput(i.value));
-  return i;
-}
-
-function openChartEditor(el) {
-  const work = clone(el);
-  const m = modal('Dados do gráfico', { wide: true });
-  m.body.innerHTML = `<div class="data-opts">
-      <label>Tipo <select class="text-input" data-o="type"><option value="bar">Barras</option><option value="line">Linhas</option></select></label>
-      <label style="flex:1">Título <input class="text-input" data-o="title" placeholder="(opcional)"></label>
-      <label class="check"><input type="checkbox" data-o="values"> Mostrar valores</label>
-      <label class="check"><input type="checkbox" data-o="legend"> Mostrar legenda</label>
-    </div>
-    <div class="data-grid-wrap"><table class="data-grid"></table></div>
-    <div class="data-actions">
-      <button class="btn btn-sm" type="button" data-a="addCat">+ Categoria (linha)</button>
-      <button class="btn btn-sm" type="button" data-a="addSer">+ Série (coluna)</button>
-      <span style="flex:1"></span>
-      <button class="btn btn-sm" type="button" data-a="cancel">Cancelar</button>
-      <button class="btn btn-sm btn-primary" type="button" data-a="ok">Aplicar</button>
-    </div>`;
-  const q = (s) => m.body.querySelector(s);
-  q('[data-o=type]').value = work.chartType;
-  q('[data-o=title]').value = work.title || '';
-  q('[data-o=values]').checked = work.showValues !== false;
-  q('[data-o=legend]').checked = work.showLegend !== false;
-  const grid = q('.data-grid');
-  const draw = () => {
-    grid.replaceChildren();
-    const head = grid.insertRow();
-    head.insertCell().textContent = 'Categoria';
-    work.series.forEach((s, si) => {
-      const td = head.insertCell();
-      const wrap = document.createElement('div');
-      wrap.className = 'ser-head';
-      const color = document.createElement('input');
-      color.type = 'color';
-      color.value = s.color;
-      color.addEventListener('input', () => (s.color = color.value.toUpperCase()));
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'icon-btn';
-      del.title = 'Remover série';
-      del.innerHTML = ic('x');
-      del.addEventListener('click', () => {
-        if (work.series.length > 1) work.series.splice(si, 1);
-        draw();
-      });
-      wrap.append(color, cellInput(s.name, (v) => (s.name = v)), del);
-      td.appendChild(wrap);
-    });
-    work.categories.forEach((c, ci) => {
-      const tr = grid.insertRow();
-      const td0 = tr.insertCell();
-      const wrap = document.createElement('div');
-      wrap.className = 'ser-head';
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'icon-btn';
-      del.title = 'Remover categoria';
-      del.innerHTML = ic('x');
-      del.addEventListener('click', () => {
-        if (work.categories.length > 1) {
-          work.categories.splice(ci, 1);
-          work.series.forEach((s) => s.values.splice(ci, 1));
-        }
-        draw();
-      });
-      wrap.append(cellInput(c, (v) => (work.categories[ci] = v)), del);
-      td0.appendChild(wrap);
-      work.series.forEach((s) => {
-        tr.insertCell().appendChild(cellInput(String(s.values[ci] ?? 0).replace('.', ','), (v) => (s.values[ci] = Number(v.replace(/\./g, '').replace(',', '.')) || 0), 'decimal'));
-      });
-    });
-  };
-  draw();
-  m.body.addEventListener('click', (ev) => {
-    const a = ev.target.closest('[data-a]')?.dataset.a;
-    if (a === 'addCat') {
-      work.categories.push(`Item ${work.categories.length + 1}`);
-      work.series.forEach((s) => s.values.push(0));
-      draw();
-    } else if (a === 'addSer') {
-      work.series.push({ name: `Série ${work.series.length + 1}`, color: SERIES_COLORS[work.series.length % SERIES_COLORS.length], values: work.categories.map(() => 0) });
-      draw();
-    } else if (a === 'cancel') m.close();
-    else if (a === 'ok') {
-      Object.assign(el, work, {
-        chartType: q('[data-o=type]').value,
-        title: q('[data-o=title]').value.trim(),
-        showValues: q('[data-o=values]').checked,
-        showLegend: q('[data-o=legend]').checked,
-      });
-      rerenderEl(el);
-      commit();
-      m.close();
-    }
-  });
-}
-
-function openTableEditor(el) {
-  const work = clone(el);
-  const m = modal('Dados da tabela', { wide: true });
-  m.body.innerHTML = `<div class="data-opts">
-      <label class="check"><input type="checkbox" data-o="header"> 1ª linha é cabeçalho</label>
-      <label>Tamanho do texto <input class="text-input" data-o="fs" type="number" min="8" max="120" style="width:90px"></label>
-    </div>
-    <div class="data-grid-wrap"><table class="data-grid"></table></div>
-    <div class="data-actions">
-      <button class="btn btn-sm" type="button" data-a="addRow">+ Linha</button>
-      <button class="btn btn-sm" type="button" data-a="addCol">+ Coluna</button>
-      <button class="btn btn-sm" type="button" data-a="prices">Preencher com a tabela de preços</button>
-      <span style="flex:1"></span>
-      <button class="btn btn-sm" type="button" data-a="cancel">Cancelar</button>
-      <button class="btn btn-sm btn-primary" type="button" data-a="ok">Aplicar</button>
-    </div>`;
-  const q = (s) => m.body.querySelector(s);
-  q('[data-o=header]').checked = work.header !== false;
-  q('[data-o=fs]').value = work.fontSize || 24;
-  const grid = q('.data-grid');
-  const cols = () => Math.max(1, ...work.rows.map((r) => r.length));
-  const draw = () => {
-    grid.replaceChildren();
-    const n = cols();
-    work.align = Array.from({ length: n }, (_, i) => (work.align && work.align[i]) || 'left');
-    const ctrl = grid.insertRow();
-    for (let c = 0; c < n; c++) {
-      const td = ctrl.insertCell();
-      const wrap = document.createElement('div');
-      wrap.className = 'ser-head';
-      const sel = document.createElement('select');
-      sel.className = 'text-input';
-      sel.title = 'Alinhamento da coluna';
-      [['left', 'Esquerda'], ['center', 'Centro'], ['right', 'Direita']].forEach(([v, t]) => sel.add(new Option(t, v)));
-      sel.value = work.align[c];
-      sel.addEventListener('change', () => (work.align[c] = sel.value));
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'icon-btn';
-      del.title = 'Remover coluna';
-      del.innerHTML = ic('x');
-      del.addEventListener('click', () => {
-        if (n > 1) {
-          work.rows.forEach((r) => r.splice(c, 1));
-          work.align.splice(c, 1);
-          if (work.colWidths) {
-            work.colWidths.splice(c, 1);
-            const t = work.colWidths.reduce((a, b) => a + b, 0);
-            work.colWidths = work.colWidths.map((w) => w / t);
-          }
-        }
-        draw();
-      });
-      wrap.append(sel, del);
-      td.appendChild(wrap);
-    }
-    ctrl.insertCell();
-    work.rows.forEach((r, ri) => {
-      const tr = grid.insertRow();
-      for (let c = 0; c < n; c++) tr.insertCell().appendChild(cellInput(r[c] ?? '', (v) => (r[c] = v)));
-      const td = tr.insertCell();
-      const del = document.createElement('button');
-      del.type = 'button';
-      del.className = 'icon-btn';
-      del.title = 'Remover linha';
-      del.innerHTML = ic('x');
-      del.addEventListener('click', () => {
-        if (work.rows.length > 1) work.rows.splice(ri, 1);
-        draw();
-      });
-      td.appendChild(del);
-    });
-  };
-  draw();
-  m.body.addEventListener('click', (ev) => {
-    const a = ev.target.closest('[data-a]')?.dataset.a;
-    if (a === 'addRow') {
-      work.rows.push(Array(cols()).fill(''));
-      draw();
-    } else if (a === 'prices') {
-      priceRows().then((rows) => {
-        if (!rows) return;
-        work.rows = rows;
-        work.colWidths = [0.3, 0.18, 0.2, 0.18, 0.14];
-        work.align = ['left', 'left', 'left', 'right', 'center'];
-        draw();
-      });
-    } else if (a === 'addCol') {
-      work.rows.forEach((r) => r.push(''));
-      if (work.colWidths) {
-        const n = work.colWidths.length + 1;
-        work.colWidths = [...work.colWidths.map((w) => (w * (n - 1)) / n), 1 / n];
-      }
-      draw();
-    } else if (a === 'cancel') m.close();
-    else if (a === 'ok') {
-      // cresce/encolhe a altura junto com o número de linhas
-      const rowH = el.h / Math.max(1, el.rows.length);
-      Object.assign(el, work, { header: q('[data-o=header]').checked, fontSize: Number(q('[data-o=fs]').value) || 24 });
-      el.h = Math.round(rowH * el.rows.length);
-      rerenderEl(el);
-      commit();
-      m.close();
-    }
-  });
 }
 
 function deleteSelected() {
@@ -1525,438 +917,10 @@ panel.addEventListener('dragend', () => {
 });
 
 // ============================================================================
-// Menus suspensos e janelas
-// ============================================================================
-
-let menuEl = null;
-function closeMenu() {
-  menuEl?.remove();
-  menuEl = null;
-}
-document.addEventListener('pointerdown', (e) => {
-  if (menuEl && !menuEl.contains(e.target) && !e.target.closest('[data-cmd]')) closeMenu();
-});
-
-function showMenu(anchor, build) {
-  if (menuEl && menuEl._anchor === anchor) return closeMenu();
-  closeMenu();
-  const m = document.createElement('div');
-  m.className = 'menu';
-  m.setAttribute('role', 'menu');
-  m._anchor = anchor;
-  // Não roubar o foco do texto em edição (mantém a seleção).
-  m.addEventListener('mousedown', (e) => {
-    if (!e.target.closest('input, select, textarea')) e.preventDefault();
-  });
-  build(m);
-  document.body.appendChild(m);
-  const r = anchor.getBoundingClientRect();
-  const mr = m.getBoundingClientRect();
-  m.style.left = `${clamp(r.left, 8, window.innerWidth - mr.width - 8)}px`;
-  const top = r.bottom + 4;
-  m.style.top = `${top + mr.height > window.innerHeight - 8 ? Math.max(8, r.top - mr.height - 4) : top}px`;
-  menuEl = m;
-  return m;
-}
-
-function mi(m, label, action, { icon, checked, disabled } = {}) {
-  const b = document.createElement('button');
-  b.type = 'button';
-  b.className = `mi${checked ? ' checked' : ''}`;
-  b.setAttribute('role', 'menuitem');
-  b.disabled = !!disabled;
-  b.innerHTML = `${icon ? ic(icon) : ''}<span></span>`;
-  b.querySelector('span').textContent = label;
-  b.addEventListener('click', () => {
-    closeMenu();
-    action();
-  });
-  m.appendChild(b);
-}
-const msep = (m) => m.appendChild(Object.assign(document.createElement('div'), { className: 'msep' }));
-const mhead = (m, t) => m.appendChild(Object.assign(document.createElement('div'), { className: 'mhead', textContent: t }));
-
-function swatches(m, onPick, { none = false, custom = true, current } = {}) {
-  const box = document.createElement('div');
-  box.className = 'swatches';
-  if (none) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'none';
-    b.title = 'Sem cor';
-    b.addEventListener('click', () => {
-      closeMenu();
-      onPick('none');
-    });
-    box.appendChild(b);
-  }
-  for (const c of PALETTE) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.style.background = c;
-    b.title = c;
-    b.addEventListener('click', () => {
-      closeMenu();
-      onPick(c);
-    });
-    box.appendChild(b);
-  }
-  m.appendChild(box);
-  if (custom) {
-    const row = document.createElement('label');
-    row.className = 'custom-color';
-    row.innerHTML = '<input type="color"> Outra cor…';
-    const input = row.querySelector('input');
-    input.value = current && current.startsWith('#') && current.length === 7 ? current : '#1DBD2C';
-    input.addEventListener('change', () => {
-      closeMenu();
-      onPick(input.value.toUpperCase());
-    });
-    m.appendChild(row);
-  }
-}
-
-const layoutCache = {};
-function layoutGrid(m, onPick) {
-  for (const [title, keys] of [['Modelos PADAP', PADAP_LAYOUT_ORDER], ['Fundos PADAP', FUNDOS_LAYOUT_ORDER], ['Layouts básicos', LAYOUT_ORDER]]) {
-    mhead(m, title);
-    layoutSection(m, keys, onPick);
-  }
-}
-
-function layoutSection(m, keys, onPick) {
-  const grid = document.createElement('div');
-  grid.className = 'layout-grid';
-  for (const key of keys) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.innerHTML = '<div class="thumb"></div><span></span>';
-    b.querySelector('span').textContent = LAYOUTS[key].name;
-    layoutCache[key] = layoutCache[key] || LAYOUTS[key].build({});
-    mountThumb(b.querySelector('.thumb'), layoutCache[key]);
-    b.addEventListener('click', () => {
-      closeMenu();
-      onPick(key);
-    });
-    grid.appendChild(b);
-  }
-  m.appendChild(grid);
-}
-
-function modal(title, { wide = false } = {}) {
-  closeMenu();
-  const bd = document.createElement('div');
-  bd.className = 'modal-backdrop';
-  bd.innerHTML = `<div class="modal${wide ? ' wide' : ''}" role="dialog" aria-modal="true">
-    <header><h2></h2><button class="icon-btn" type="button" data-close aria-label="Fechar">${ic('x')}</button></header>
-    <div class="body"></div></div>`;
-  bd.querySelector('h2').textContent = title;
-  const close = () => bd.remove();
-  bd.addEventListener('pointerdown', (e) => e.target === bd && close());
-  bd.querySelector('[data-close]').addEventListener('click', close);
-  document.body.appendChild(bd);
-  return { body: bd.querySelector('.body'), modal: bd.querySelector('.modal'), close, root: bd };
-}
-
-// ---- Seletor de imagens (Banco, Portfólio, Minhas imagens) ------------------
-
-const PICKER_TABS = [
-  ['banco', 'Banco de imagens'],
-  ['portfolio', 'Portfólio'],
-  ['user', 'Minhas imagens'],
-];
-
-function openPicker(category, onPick = insertImage) {
-  const m = modal('Inserir imagem', { wide: true });
-  m.body.innerHTML = `<div class="picker-tabs"></div><div class="picker-filters" hidden></div><div class="picker-grid"></div>`;
-  const filters = m.body.querySelector('.picker-filters');
-  filters.innerHTML = `
-    <select class="text-input" data-f="kind" aria-label="Tipo"><option value="">Tudo</option><option value="produto">Produtos</option><option value="logo">Logos das marcas</option><option value="pagina">Páginas do portfólio</option></select>
-    <select class="text-input" data-f="brand" aria-label="Marca"><option value="">Todas as marcas</option></select>
-    <label class="check"><input type="checkbox" data-f="withText" checked> Inserir produto com nome e descrição</label>
-    <select class="text-input" data-f="theme" aria-label="Tema"><option value="">Todos os temas</option></select>`;
-  const fKind = filters.querySelector('[data-f=kind]');
-  const fBrand = filters.querySelector('[data-f=brand]');
-  const fText = filters.querySelector('[data-f=withText]');
-  fKind.addEventListener('change', () => draw());
-  fBrand.addEventListener('change', () => draw());
-  const fTheme = filters.querySelector('[data-f=theme]');
-  fTheme.addEventListener('change', () => draw());
-  const tabs = m.body.querySelector('.picker-tabs');
-  const grid = m.body.querySelector('.picker-grid');
-  let cat = category;
-  let items = [];
-
-  const search = document.createElement('input');
-  search.className = 'text-input';
-  search.type = 'search';
-  search.placeholder = 'Buscar…';
-  search.style.cssText = 'max-width:220px;height:36px;margin-left:auto';
-  const upload = document.createElement('button');
-  upload.type = 'button';
-  upload.className = 'btn btn-sm btn-primary';
-  upload.innerHTML = `${ic('upload')} Enviar do computador`;
-
-  function drawTabs() {
-    tabs.replaceChildren();
-    for (const [k, label] of PICKER_TABS) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = `btn btn-sm${k === cat ? ' btn-dark' : ''}`;
-      b.textContent = label;
-      b.addEventListener('click', () => {
-        cat = k;
-        load();
-      });
-      tabs.appendChild(b);
-    }
-    tabs.append(search, upload);
-    upload.hidden = cat !== 'user' && !boot.isAdmin;
-  }
-
-  function draw() {
-    const q = search.value.trim().toLowerCase();
-    grid.replaceChildren();
-    const isPf = cat === 'portfolio';
-    const themes = cat === 'banco' && items.some((a) => a.theme);
-    filters.hidden = !isPf && !themes;
-    [fKind, fBrand, fText.parentElement].forEach((el) => (el.hidden = !isPf));
-    fTheme.hidden = !themes;
-    grid.classList.toggle('contain', isPf);
-    const list = items.filter(
-      (a) =>
-        (!q || `${a.title} ${a.description || ''}`.toLowerCase().includes(q)) &&
-        (!isPf || !fKind.value || (a.kind || 'produto') === fKind.value) &&
-        (!isPf || !fBrand.value || a.brand === fBrand.value) &&
-        (!themes || !fTheme.value || a.theme === fTheme.value)
-    );
-    if (!list.length) {
-      const msg =
-        cat === 'user'
-          ? 'Você ainda não enviou imagens. Use “Enviar do computador”.'
-          : `Nenhuma imagem no ${cat === 'banco' ? 'Banco de imagens' : 'Portfólio'} ainda.${boot.isAdmin ? ' Envie pelo botão ao lado ou pelo menu Imagens.' : ' Peça ao administrador para enviar.'}`;
-      grid.innerHTML = `<div class="empty" style="grid-column:1/-1">${msg}</div>`;
-      return;
-    }
-    for (const a of list) {
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.innerHTML = '<img loading="lazy" alt=""><span></span>';
-      b.querySelector('img').src = a.thumb || a.url;
-      b.querySelector('span').textContent = a.title || 'Sem título';
-      if (a.description) b.title = `${a.name}: ${a.description}`;
-      b.addEventListener('click', () => {
-        m.close();
-        onPick(a.url, a, cat === 'portfolio' && fText.checked);
-      });
-      grid.appendChild(b);
-    }
-  }
-
-  async function load() {
-    drawTabs();
-    grid.innerHTML = '<div class="muted">Carregando…</div>';
-    try {
-      items = (await api('GET', `/api/assets?category=${cat}`)).assets;
-      const brands = [...new Set(items.map((a) => a.brand).filter(Boolean))].sort((x, y) => x.localeCompare(y, 'pt-BR'));
-      fBrand.replaceChildren(new Option('Todas as marcas', ''), ...brands.map((b) => new Option(b, b)));
-      const themes = [...new Set(items.map((a) => a.theme).filter(Boolean))];
-      fTheme.replaceChildren(new Option('Todos os temas', ''), ...themes.map((t) => new Option(t, t)));
-    } catch (e) {
-      items = [];
-      toast(e.message, 'error');
-    }
-    draw();
-  }
-
-  search.addEventListener('input', draw);
-  upload.addEventListener('click', () => {
-    const input = $('#file-input');
-    input.value = '';
-    input.onchange = async () => {
-      const file = input.files[0];
-      if (!file) return;
-      const fd = new FormData();
-      fd.append('category', cat);
-      fd.append('title', file.name);
-      fd.append('image', file);
-      upload.disabled = true;
-      upload.textContent = 'Enviando…';
-      try {
-        const { asset } = await api('POST', '/api/assets', fd);
-        m.close();
-        onPick(asset.url);
-      } catch (e) {
-        toast(e.message, 'error');
-        upload.disabled = false;
-        upload.innerHTML = `${ic('upload')} Enviar do computador`;
-      }
-    };
-    input.click();
-  });
-  load();
-}
-
-// ---- Compartilhar ---------------------------------------------------------
-
-async function openShare() {
-  if (!(await ensureSaved())) return;
-  const m = modal('Compartilhar');
-  const link = () => (boot.shareToken ? `${location.origin}/v/${boot.shareToken}` : '');
-  m.body.innerHTML = `
-    <div class="share-row"><input type="checkbox" id="sh-team" class="check"><label for="sh-team" class="txt">
-      <strong>Visível para a equipe</strong><span>Todos os usuários do Estúdio veem na Biblioteca (aba “Compartilhadas pela equipe”), podem apresentar e fazer uma cópia. Só você edita.</span></label></div>
-    <div class="share-row"><input type="checkbox" id="sh-public"><div class="txt" style="flex:1"><label for="sh-public">
-      <strong>Link público de visualização</strong><span>Qualquer pessoa com o link pode assistir à apresentação, sem login (ex.: enviar a um cliente).</span></label>
-      <div class="share-link" hidden><input class="text-input" readonly><button class="btn btn-sm" type="button">${ic('copy')} Copiar</button></div></div></div>`;
-  const team = m.body.querySelector('#sh-team');
-  const pub = m.body.querySelector('#sh-public');
-  const linkBox = m.body.querySelector('.share-link');
-  const linkInput = linkBox.querySelector('input');
-  const draw = () => {
-    team.checked = !!boot.teamVisible;
-    pub.checked = !!boot.shareToken;
-    linkBox.hidden = !boot.shareToken;
-    linkInput.value = link();
-  };
-  const send = async (body) => {
-    try {
-      const r = await api('POST', `/api/presentations/${pres.id}/share`, body);
-      boot.teamVisible = r.team;
-      boot.shareToken = r.shareToken;
-    } catch (e) {
-      toast(e.message, 'error');
-    }
-    draw();
-  };
-  team.addEventListener('change', () => send({ team: team.checked }));
-  pub.addEventListener('change', () => send({ public: pub.checked }));
-  linkBox.querySelector('button').addEventListener('click', async () => {
-    await flush();
-    try {
-      await navigator.clipboard.writeText(link());
-      toast('Link copiado.');
-    } catch (e) {
-      linkInput.select();
-    }
-  });
-  draw();
-}
-
-// ---- Exportar / salvar ----------------------------------------------------
-
-async function doExportPptx() {
-  await flush();
-  toast('Gerando o arquivo do PowerPoint…');
-  try {
-    const warnings = await exportPptx(pres.title, slides(), (i, n) => setStatus(`Exportando slide ${i} de ${n}…`));
-    setStatus('Todas as alterações foram salvas');
-    toast(warnings.length ? `PowerPoint gerado, mas ${warnings.length} imagem(ns) não puderam ser incluídas.` : 'PowerPoint gerado.', warnings.length ? 'error' : '');
-  } catch (e) {
-    setStatus('Todas as alterações foram salvas');
-    toast(e.message, 'error');
-  }
-}
-
-// ---- Histórico de versões ----------------------------------------------------
-
-async function openHistory() {
-  if (!pres.id) return toast('Esta apresentação ainda não foi salva — não há versões anteriores.');
-  await flush();
-  const m = modal('Histórico de versões', { wide: true });
-  m.body.innerHTML = `<p class="muted" style="margin-top:0">Uma cópia é guardada automaticamente a cada 10 minutos de edição (até as 50 mais recentes). Restaurar não apaga nada: a versão atual também fica guardada.</p>
-    <div class="history"><div class="history-list"></div><div class="history-preview"><div class="muted">Escolha uma versão à esquerda.</div></div></div>`;
-  const listBox = m.body.querySelector('.history-list');
-  const prev = m.body.querySelector('.history-preview');
-  let versions = [];
-  try {
-    versions = (await api('GET', `/api/presentations/${pres.id}/versions`)).versions;
-  } catch (err) {
-    toast(err.message, 'error');
-  }
-  if (!versions.length) {
-    listBox.innerHTML = '<div class="empty">Ainda não há versões anteriores. Elas aparecem depois de alguns minutos de edição.</div>';
-    return undefined;
-  }
-  for (const v of versions) {
-    const b = document.createElement('button');
-    b.type = 'button';
-    b.className = 'history-item';
-    b.innerHTML = '<strong></strong><span></span>';
-    b.querySelector('strong').textContent = fmtDate(v.created_at);
-    b.querySelector('span').textContent = [v.reason === 'restore' ? 'Antes de uma restauração' : null, v.author_name, `${v.slide_count} slide${v.slide_count === 1 ? '' : 's'}`].filter(Boolean).join(' · ');
-    b.addEventListener('click', async () => {
-      listBox.querySelectorAll('.history-item').forEach((x) => x.classList.toggle('on', x === b));
-      prev.innerHTML = '<div class="muted">Carregando…</div>';
-      try {
-        const full = await api('GET', `/api/presentations/${pres.id}/versions/${v.id}`);
-        prev.innerHTML = `<div class="history-head"><strong></strong><button class="btn btn-primary btn-sm" type="button">Restaurar esta versão</button></div><div class="history-thumbs"></div>`;
-        prev.querySelector('strong').textContent = `${full.title} — ${fmtDate(full.created_at)}`;
-        const thumbs = prev.querySelector('.history-thumbs');
-        for (const s of full.data.slides) {
-          const t = document.createElement('div');
-          thumbs.appendChild(t);
-          mountThumb(t, s);
-        }
-        prev.querySelector('button').addEventListener('click', async () => {
-          if (!confirm('Restaurar esta versão? A versão atual será guardada no histórico.')) return;
-          try {
-            await api('POST', `/api/presentations/${pres.id}/versions/${v.id}/restore`);
-            pending = false;
-            location.reload();
-          } catch (err) {
-            toast(err.message, 'error');
-          }
-        });
-      } catch (err) {
-        prev.innerHTML = '';
-        toast(err.message, 'error');
-      }
-    });
-    listBox.appendChild(b);
-  }
-  return undefined;
-}
-
-async function doExportPdf() {
-  await flush();
-  toast('Gerando o PDF…');
-  try {
-    await exportPdf(pres.title, slides(), (i, n) => setStatus(`Gerando PDF: slide ${i} de ${n}…`));
-    toast('PDF gerado.');
-  } catch (err) {
-    toast(err.message, 'error');
-  }
-  setStatus(pres.id ? 'Todas as alterações foram salvas' : 'Rascunho — será salvo na primeira edição');
-}
-
-async function openPrint(pdf) {
-  if (!(await ensureSaved())) return;
-  window.open(`/imprimir/${pres.id}?auto=1${pdf ? '&pdf=1' : ''}`, '_blank');
-}
-
-async function saveAs() {
-  const title = prompt('Salvar uma cópia com o nome:', `${pres.title} (cópia)`);
-  if (!title) return;
-  if (!(await ensureSaved())) return;
-  try {
-    const { id } = await api('POST', `/api/presentations/${pres.id}/copy`, { title, data: pres.data });
-    location.href = `/editor/${id}`;
-  } catch (e) {
-    toast(e.message, 'error');
-  }
-}
-
-async function saveNow() {
-  pending = true;
-  if (await flush()) toast('Apresentação salva.');
-}
-
-// ============================================================================
 // Barra de ferramentas
 // ============================================================================
 
-function syncToolbar() {
+export function syncToolbar() {
   const el = selEl();
   const isText = el && el.type === 'text';
   $('#font-family').value = isText ? el.style.fontFamily : 'Space Grotesk';
